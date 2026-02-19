@@ -1,0 +1,47 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: library-postgres
+    environment:
+      POSTGRES_DB: library_db
+      POSTGRES_USER: ufu_user
+      POSTGRES_PASSWORD: ufu_pass
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ufu_user -d library_db" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  app:
+    build:
+      context: ../backend
+      dockerfile: Dockerfile
+    container_name: library-app
+    ports:
+      - "8080:8080"
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: library_db
+      DB_USER: ufu_user
+      DB_PASS: ufu_pass
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  web:
+    build:
+      context: ../frontend
+      dockerfile: Dockerfile
+    container_name: library-web
+    ports:
+      - "3000:80"
+    depends_on:
+      - app
+
+volumes:
+  postgres_data:

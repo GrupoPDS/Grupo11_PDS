@@ -1,0 +1,38 @@
+services:
+  # 1. O Backend (Spring Boot Docker)
+  - type: web
+    name: library-backend
+    runtime: docker
+    repo: https://github.com/Filipe-code0/Grupo11_PDS
+    branch: main
+    rootDir: backend
+    plan: free
+    region: oregon
+    envVars:
+      - key: SPRING_PROFILES_ACTIVE
+        value: prod
+      - key: PORT
+        value: 8080
+      - key: SPRING_DATASOURCE_URL
+        fromDatabase:
+          name: library-db
+          property: connectionString
+      - key: SPRING_DATASOURCE_USERNAME
+        fromDatabase:
+          name: library-db
+          property: user
+      - key: SPRING_DATASOURCE_PASSWORD
+        fromDatabase:
+          name: library-db
+          property: password
+
+  # 2. O Banco de Dados (Postgres Gerenciado pelo Render)
+  # Nota: Se usar Neon.tech, remova esta seção e use envVars manuais no painel.
+  # Se quiser tudo no Render (mais fácil de configurar), mantenha.
+databases:
+  - name: library-db
+    plan: free
+    databaseName: library
+    user: ufu_user
+
+# (O Frontend Vercel é configurado separadamente pois é outra plataforma)

@@ -1,0 +1,57 @@
+name: Java CI with Maven & Docker Check
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: ./backend
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up JDK 17
+      uses: actions/setup-java@v4
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+        cache: 'maven'
+
+    - name: Build with Maven (Skip Tests for Speed, verify compilation)
+      run: ./mvnw clean compile
+
+    - name: Run Unit Tests (JUnit + Mockito)
+      run: ./mvnw test
+
+    - name: Verify Flyway Migrations Naming
+      run: |
+        # Script simples para garantir que ninguém criou migration sem V<numero>__
+        if ls src/main/resources/db/migration | grep -vE '^V[0-9]+__.*\.sql$'; then
+          echo "❌ Erro: Arquivos de migração fora do padrão V<version>__Description.sql encontrados!"
+          exit 1
+        fi
+        echo "✅ Todas as migrações seguem o padrão."
+
+  docker-build-check:
+    needs: build-and-test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build Docker Image (Dry Run - Backend)
+        uses: docker/build-push-action@v5
+        with:
+          context: ./backend
+          file: ./backend/Dockerfile
+          push: false
+          tags: library-backend:test
