@@ -8,6 +8,7 @@ services:
     rootDir: backend
     plan: free
     region: oregon
+    previewsEnabled: true
     envVars:
       - key: SPRING_PROFILES_ACTIVE
         value: prod
@@ -37,12 +38,11 @@ services:
           property: password
 
   # 2. O Banco de Dados (Postgres Gerenciado pelo Render)
-  # Nota: Se usar Neon.tech, remova esta seção e use envVars manuais no painel.
-  # Se quiser tudo no Render (mais fácil de configurar), mantenha.
 databases:
   - name: library-db
     plan: free
     databaseName: library
     user: ufu_user
+    previewsEnabled: true
 
 # (O Frontend Vercel é configurado separadamente pois é outra plataforma)

@@ -73,10 +73,10 @@ jobs:
       run: npm run lint
 
   # =============================================
-  # Job 3: Docker Build (Dry Run)
+  # Job 3: Docker Build + Security Scan
   # =============================================
   docker-build-check:
-    name: "🐳 Docker Build"
+    name: "🐳 Docker Build + Security"
     needs: [backend-checks, frontend-checks]
     runs-on: ubuntu-latest
 
@@ -92,4 +92,13 @@ jobs:
         context: ./backend
         file: ./backend/Dockerfile
         push: false
+        load: true
         tags: library-backend:test
+
+    - name: "🔒 Trivy Vulnerability Scanner"
+      uses: aquasecurity/trivy-action@master
+      with:
+        image-ref: 'library-backend:test'
+        format: 'table'
+        exit-code: '1'
+        severity: 'CRITICAL,HIGH'
