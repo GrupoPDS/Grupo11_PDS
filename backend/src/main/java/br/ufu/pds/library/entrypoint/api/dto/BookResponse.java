@@ -1,10 +1,9 @@
 package br.ufu.pds.library.entrypoint.api.dto;
 
 import br.ufu.pds.library.core.domain.Book;
+import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-
-import java.time.LocalDateTime;
 
 @Getter
 @AllArgsConstructor
@@ -30,7 +29,6 @@ public class BookResponse {
                 book.getYear(),
                 book.getQuantity(),
                 book.getCreatedAt(),
-                book.getUpdatedAt()
-        );
+                book.getUpdatedAt());
     }
 }

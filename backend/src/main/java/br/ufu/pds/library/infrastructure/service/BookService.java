@@ -4,11 +4,10 @@ import br.ufu.pds.library.core.domain.Book;
 import br.ufu.pds.library.core.exceptions.BookNotFoundException;
 import br.ufu.pds.library.core.exceptions.DuplicateIsbnException;
 import br.ufu.pds.library.infrastructure.persistence.BookRepository;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -31,14 +30,13 @@ public class BookService {
 
     @Transactional(readOnly = true)
     public Book findById(Long id) {
-        return bookRepository.findById(id)
-                .orElseThrow(() -> new BookNotFoundException(id));
+        return bookRepository.findById(id).orElseThrow(() -> new BookNotFoundException(id));
     }
 
     @Transactional
     public Book update(Long id, Book updatedBook) {
-        Book existing = bookRepository.findById(id)
-                .orElseThrow(() -> new BookNotFoundException(id));
+        Book existing =
+                bookRepository.findById(id).orElseThrow(() -> new BookNotFoundException(id));
 
         // Se o ISBN mudou, verificar se o novo já existe em outro livro
         if (!existing.getIsbn().equals(updatedBook.getIsbn())
