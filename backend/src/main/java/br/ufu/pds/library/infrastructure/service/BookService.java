@@ -50,6 +50,7 @@ public class BookService {
         existing.setPublisher(updatedBook.getPublisher());
         existing.setYear(updatedBook.getYear());
         existing.setQuantity(updatedBook.getQuantity());
+        existing.setCategory(updatedBook.getCategory());
 
         return bookRepository.save(existing);
     }

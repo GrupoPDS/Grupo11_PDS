@@ -36,6 +36,9 @@ public class Book {
     @Builder.Default
     private Integer quantity = 1;
 
+    @Column(length = 100)
+    private String category;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 

@@ -16,6 +16,7 @@ public class BookResponse {
     private String publisher;
     private Integer year;
     private Integer quantity;
+    private String category;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
@@ -28,6 +29,7 @@ public class BookResponse {
                 book.getPublisher(),
                 book.getYear(),
                 book.getQuantity(),
+                book.getCategory(),
                 book.getCreatedAt(),
                 book.getUpdatedAt());
     }
