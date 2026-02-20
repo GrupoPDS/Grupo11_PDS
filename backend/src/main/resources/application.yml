@@ -3,13 +3,13 @@ spring:
     name: library-system-ufu
 
   # ==============================================
-  # Datasource — lê de variáveis de ambiente
-  # Local: usa defaults | Produção (Render/Neon): injeta via painel
+  # Datasource — sempre monta a URL JDBC a partir dos componentes
+  # Isso evita problemas com o formato postgresql:// do Render
   # ==============================================
   datasource:
-    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:library_db}}
-    username: ${SPRING_DATASOURCE_USERNAME:${DB_USER:ufu_user}}
-    password: ${SPRING_DATASOURCE_PASSWORD:${DB_PASS:ufu_pass}}
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:library_db}
+    username: ${DB_USER:ufu_user}
+    password: ${DB_PASS:ufu_pass}
     driver-class-name: org.postgresql.Driver
 
   # ==============================================
