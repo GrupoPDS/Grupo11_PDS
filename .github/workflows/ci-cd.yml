@@ -1,4 +1,4 @@
-name: Java CI with Maven & Docker Check
+name: CI Pipeline — Library System UFU
 
 on:
   push:
@@ -7,7 +7,11 @@ on:
     branches: [ "main" ]
 
 jobs:
-  build-and-test:
+  # =============================================
+  # Job 1: Backend — Lint + Testes
+  # =============================================
+  backend-checks:
+    name: "☕ Backend (Java)"
     runs-on: ubuntu-latest
 
     defaults:
@@ -24,34 +28,68 @@ jobs:
         distribution: 'temurin'
         cache: 'maven'
 
-    - name: Build with Maven (Skip Tests for Speed, verify compilation)
-      run: ./mvnw clean compile
+    - name: "🎨 Check Code Formatting (Spotless)"
+      run: ./mvnw spotless:check -q
 
-    - name: Run Unit Tests (JUnit + Mockito)
+    - name: "🧪 Run Tests (JUnit + Mockito)"
       run: ./mvnw test
 
-    - name: Verify Flyway Migrations Naming
+    - name: "📋 Verify Flyway Migrations Naming"
       run: |
-        # Script simples para garantir que ninguém criou migration sem V<numero>__
         if ls src/main/resources/db/migration | grep -vE '^V[0-9]+__.*\.sql$'; then
-          echo "❌ Erro: Arquivos de migração fora do padrão V<version>__Description.sql encontrados!"
+          echo "❌ Arquivos de migração fora do padrão!"
           exit 1
         fi
-        echo "✅ Todas as migrações seguem o padrão."
+        echo "✅ Migrações OK."
 
-  docker-build-check:
-    needs: build-and-test
+  # =============================================
+  # Job 2: Frontend — Lint + Prettier
+  # =============================================
+  frontend-checks:
+    name: "⚛️ Frontend (React)"
     runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: ./frontend
+
     steps:
-      - uses: actions/checkout@v4
+    - uses: actions/checkout@v4
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+    - name: Set up Node.js 20
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        cache: 'npm'
+        cache-dependency-path: frontend/package-lock.json
 
-      - name: Build Docker Image (Dry Run - Backend)
-        uses: docker/build-push-action@v5
-        with:
-          context: ./backend
-          file: ./backend/Dockerfile
-          push: false
-          tags: library-backend:test
+    - name: Install Dependencies
+      run: npm ci
+
+    - name: "🎨 Check Formatting (Prettier)"
+      run: npx prettier --check .
+
+    - name: "🔍 Lint (ESLint)"
+      run: npm run lint
+
+  # =============================================
+  # Job 3: Docker Build (Dry Run)
+  # =============================================
+  docker-build-check:
+    name: "🐳 Docker Build"
+    needs: [backend-checks, frontend-checks]
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+
+    - name: Build Backend Image (Dry Run)
+      uses: docker/build-push-action@v5
+      with:
+        context: ./backend
+        file: ./backend/Dockerfile
+        push: false
+        tags: library-backend:test
