@@ -13,15 +13,25 @@ services:
         value: prod
       - key: PORT
         value: 8080
-      - key: SPRING_DATASOURCE_URL
+      # Render connectionString usa formato postgresql:// (sem jdbc:)
+      # Por isso passamos host/port/name separados para o Spring montar jdbc:postgresql://
+      - key: DB_HOST
         fromDatabase:
           name: library-db
-          property: connectionString
-      - key: SPRING_DATASOURCE_USERNAME
+          property: host
+      - key: DB_PORT
+        fromDatabase:
+          name: library-db
+          property: port
+      - key: DB_NAME
+        fromDatabase:
+          name: library-db
+          property: database
+      - key: DB_USER
         fromDatabase:
           name: library-db
           property: user
-      - key: SPRING_DATASOURCE_PASSWORD
+      - key: DB_PASS
         fromDatabase:
           name: library-db
           property: password
