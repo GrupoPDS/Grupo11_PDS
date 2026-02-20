@@ -35,4 +35,7 @@ public class CreateBookRequest {
     @NotNull(message = "A quantidade é obrigatória")
     @Positive(message = "A quantidade deve ser maior que zero")
     private Integer quantity;
+
+    @Size(max = 100)
+    private String category;
 }
