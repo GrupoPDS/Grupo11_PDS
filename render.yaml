@@ -10,7 +10,6 @@ services:
     rootDir: backend
     plan: free
     region: oregon
-    previewsEnabled: true
     envVars:
       - key: SPRING_PROFILES_ACTIVE
         value: staging
