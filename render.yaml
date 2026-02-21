@@ -1,48 +1,93 @@
 services:
-  # 1. O Backend (Spring Boot Docker)
+  # =============================================
+  # 1. STAGING — Auto-deploy a cada push na main
+  # =============================================
   - type: web
-    name: library-backend
+    name: library-backend-staging
     runtime: docker
-    repo: https://github.com/Filipe-code0/Grupo11_PDS
+    repo: https://github.com/GrupoPDS/Grupo11_PDS
     branch: main
     rootDir: backend
     plan: free
     region: oregon
+    autoDeploy: true
     previewsEnabled: true
+    envVars:
+      - key: SPRING_PROFILES_ACTIVE
+        value: staging
+      - key: PORT
+        value: 8080
+      - key: DB_HOST
+        fromDatabase:
+          name: library-db-staging
+          property: host
+      - key: DB_PORT
+        fromDatabase:
+          name: library-db-staging
+          property: port
+      - key: DB_NAME
+        fromDatabase:
+          name: library-db-staging
+          property: database
+      - key: DB_USER
+        fromDatabase:
+          name: library-db-staging
+          property: user
+      - key: DB_PASS
+        fromDatabase:
+          name: library-db-staging
+          property: password
+
+  # =============================================
+  # 2. PRODUÇÃO — Deploy APENAS via Release Hook
+  # =============================================
+  - type: web
+    name: library-backend-prod
+    runtime: docker
+    repo: https://github.com/GrupoPDS/Grupo11_PDS
+    branch: main
+    rootDir: backend
+    plan: free
+    region: oregon
+    autoDeploy: false  # ← Deploy MANUAL via GitHub Release + Deploy Hook
     envVars:
       - key: SPRING_PROFILES_ACTIVE
         value: prod
       - key: PORT
         value: 8080
-      # Render connectionString usa formato postgresql:// (sem jdbc:)
-      # Por isso passamos host/port/name separados para o Spring montar jdbc:postgresql://
       - key: DB_HOST
         fromDatabase:
-          name: library-db
+          name: library-db-prod
           property: host
       - key: DB_PORT
         fromDatabase:
-          name: library-db
+          name: library-db-prod
           property: port
       - key: DB_NAME
         fromDatabase:
-          name: library-db
+          name: library-db-prod
           property: database
       - key: DB_USER
         fromDatabase:
-          name: library-db
+          name: library-db-prod
           property: user
       - key: DB_PASS
         fromDatabase:
-          name: library-db
+          name: library-db-prod
           property: password
 
-  # 2. O Banco de Dados (Postgres Gerenciado pelo Render)
+# =============================================
+# Bancos de Dados
+# =============================================
 databases:
-  - name: library-db
+  - name: library-db-staging
     plan: free
-    databaseName: library
+    databaseName: library_staging
     user: ufu_user
-    previewsEnabled: true
+
+  - name: library-db-prod
+    plan: free
+    databaseName: library_prod
+    user: ufu_user
 
 # (O Frontend Vercel é configurado separadamente pois é outra plataforma)

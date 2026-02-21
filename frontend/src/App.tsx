@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Toast, type ToastType } from './components/Toast';
 import './App.css';
 
@@ -40,6 +40,7 @@ function App() {
   // Carregar livros ao montar o componente
   useEffect(() => {
     loadBooks();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Mostrar Toast com auto-dismiss
@@ -103,7 +104,9 @@ function App() {
       } else if (res.status >= 400 && res.status < 500) {
         const json = await res.json().catch(() => ({}));
         const detalhes = json.detalhes
-          ? json.detalhes.map((d: any) => `${d.campo}: ${d.mensagem}`).join('; ')
+          ? json.detalhes
+              .map((d: { campo: string; mensagem: string }) => `${d.campo}: ${d.mensagem}`)
+              .join('; ')
           : json.error || 'Dados inválidos';
         showToast(`Erro: ${detalhes}`, 'error');
       } else if (res.status >= 500) {
