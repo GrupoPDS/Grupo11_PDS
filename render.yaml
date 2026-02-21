@@ -10,6 +10,7 @@ services:
     rootDir: backend
     plan: free
     region: oregon
+    autoDeploy: true
     envVars:
       - key: SPRING_PROFILES_ACTIVE
         value: staging
@@ -17,23 +18,23 @@ services:
         value: 8080
       - key: DB_HOST
         fromDatabase:
-          name: library-db-staging
+          name: library-db
           property: host
       - key: DB_PORT
         fromDatabase:
-          name: library-db-staging
+          name: library-db
           property: port
       - key: DB_NAME
         fromDatabase:
-          name: library-db-staging
+          name: library-db
           property: database
       - key: DB_USER
         fromDatabase:
-          name: library-db-staging
+          name: library-db
           property: user
       - key: DB_PASS
         fromDatabase:
-          name: library-db-staging
+          name: library-db
           property: password
 
   # =============================================
@@ -47,7 +48,7 @@ services:
     rootDir: backend
     plan: free
     region: oregon
-    autoDeploy: false  # ← Deploy MANUAL via GitHub Release + Deploy Hook
+    autoDeploy: false
     envVars:
       - key: SPRING_PROFILES_ACTIVE
         value: prod
@@ -55,37 +56,30 @@ services:
         value: 8080
       - key: DB_HOST
         fromDatabase:
-          name: library-db-prod
+          name: library-db
           property: host
       - key: DB_PORT
         fromDatabase:
-          name: library-db-prod
+          name: library-db
           property: port
       - key: DB_NAME
         fromDatabase:
-          name: library-db-prod
+          name: library-db
           property: database
       - key: DB_USER
         fromDatabase:
-          name: library-db-prod
+          name: library-db
           property: user
       - key: DB_PASS
         fromDatabase:
-          name: library-db-prod
+          name: library-db
           property: password
 
 # =============================================
-# Bancos de Dados
+# Bancos de Dados (Apenas UM no plano Free)
 # =============================================
 databases:
-  - name: library-db-staging
+  - name: library-db
     plan: free
-    databaseName: library_staging
+    databaseName: library_db
     user: ufu_user
-
-  - name: library-db-prod
-    plan: free
-    databaseName: library_prod
-    user: ufu_user
-
-# (O Frontend Vercel é configurado separadamente pois é outra plataforma)
