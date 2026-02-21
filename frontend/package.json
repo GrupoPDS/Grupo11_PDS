@@ -10,7 +10,8 @@
     "lint": "eslint . --report-unused-disable-directives --max-warnings 0",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "vercel-build": "npm install --production=false && vite build"
   },
   "dependencies": {
     "react": "^19.2.0",
@@ -31,9 +32,11 @@
     "globals": "^16.5.0",
     "prettier": "^3.8.1",
     "tailwindcss": "^4.2.0",
-    "puppeteer": "^20.8.0",
     "typescript": "~5.9.3",
     "typescript-eslint": "^8.48.0",
     "vite": "^7.3.1"
+  },
+  "optionalDependencies": {
+    "puppeteer": "^20.8.0"
   }
 }
