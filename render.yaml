@@ -11,7 +11,6 @@ services:
     plan: free
     region: oregon
     autoDeploy: true
-    previewsEnabled: true
     envVars:
       - key: SPRING_PROFILES_ACTIVE
         value: staging
