@@ -10,7 +10,6 @@ services:
     rootDir: backend
     plan: free
     region: oregon
-    autoDeploy: true
     previewsEnabled: true
     envVars:
       - key: SPRING_PROFILES_ACTIVE
