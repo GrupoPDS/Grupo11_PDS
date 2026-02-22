@@ -102,7 +102,7 @@ jobs:
         severity: 'CRITICAL'
 
   # =============================================
-  # Job 4: Deploy para Produção
+  # Job 4: Deploy para Produção (Backend e Frontend)
   # =============================================
   deploy-production:
     name: "🚀 Deploy Production"
@@ -111,23 +111,35 @@ jobs:
     environment: production
 
     steps:
-    - name: "🚀 Trigger Render Production Deploy"
+    - name: "🚀 Trigger Render Production Deploy (Backend)"
       run: |
         echo "🔄 Acionando deploy de produção no Render..."
         RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" -X POST "${{ secrets.RENDER_PROD_DEPLOY_HOOK }}")
         if [ "$RESPONSE" -eq 200 ] || [ "$RESPONSE" -eq 201 ]; then
-          echo "✅ Deploy acionado com sucesso! (HTTP $RESPONSE)"
+          echo "✅ Deploy Backend acionado com sucesso! (HTTP $RESPONSE)"
         else
-          echo "❌ Falha ao acionar deploy! (HTTP $RESPONSE)"
+          echo "❌ Falha ao acionar deploy do Backend! (HTTP $RESPONSE)"
+          exit 1
+        fi
+
+    - name: "🚀 Trigger Vercel Production Deploy (Frontend)"
+      run: |
+        echo "🔄 Acionando deploy de produção na Vercel..."
+        RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" -X POST "${{ secrets.VERCEL_PROD_DEPLOY_HOOK }}")
+        if [ "$RESPONSE" -eq 200 ] || [ "$RESPONSE" -eq 201 ]; then
+          echo "✅ Deploy Frontend acionado com sucesso! (HTTP $RESPONSE)"
+        else
+          echo "❌ Falha ao acionar deploy do Frontend! (HTTP $RESPONSE)"
           exit 1
         fi
 
     - name: "📝 Release Summary"
       run: |
         echo "=========================================="
-        echo "🟢 PRODUÇÃO — Deploy acionado!"
+        echo "🟢 PRODUÇÃO — Deploys acionados!"
         echo "=========================================="
         echo "Release: ${{ github.event.release.tag_name }}"
         echo "Título:  ${{ github.event.release.name }}"
         echo "Autor:   ${{ github.event.release.author.login }}"
+        echo "Status:  Backend (Render) e Frontend (Vercel) OK"
         echo "=========================================="
