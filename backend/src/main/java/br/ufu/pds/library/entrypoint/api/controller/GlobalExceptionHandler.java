@@ -2,7 +2,9 @@ package br.ufu.pds.library.entrypoint.api.controller;
 
 import br.ufu.pds.library.core.exceptions.BookNotFoundException;
 import br.ufu.pds.library.core.exceptions.BusinessException;
+import br.ufu.pds.library.core.exceptions.DuplicateEmailException;
 import br.ufu.pds.library.core.exceptions.DuplicateIsbnException;
+import br.ufu.pds.library.core.exceptions.UserNotFoundException;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
@@ -31,9 +33,21 @@ public class GlobalExceptionHandler {
         return buildErrorResponse(HttpStatus.CONFLICT, ex.getMessage());
     }
 
-    /** Recurso não encontrado → 404 Not Found */
+    /** Email duplicado → 409 Conflict */
+    @ExceptionHandler(DuplicateEmailException.class)
+    public ResponseEntity<Map<String, Object>> handleDuplicateEmail(DuplicateEmailException ex) {
+        return buildErrorResponse(HttpStatus.CONFLICT, ex.getMessage());
+    }
+
+    /** Livro não encontrado → 404 Not Found */
     @ExceptionHandler(BookNotFoundException.class)
     public ResponseEntity<Map<String, Object>> handleBookNotFound(BookNotFoundException ex) {
+        return buildErrorResponse(HttpStatus.NOT_FOUND, ex.getMessage());
+    }
+
+    /** Usuário não encontrado → 404 Not Found */
+    @ExceptionHandler(UserNotFoundException.class)
+    public ResponseEntity<Map<String, Object>> handleUserNotFound(UserNotFoundException ex) {
         return buildErrorResponse(HttpStatus.NOT_FOUND, ex.getMessage());
     }
 
