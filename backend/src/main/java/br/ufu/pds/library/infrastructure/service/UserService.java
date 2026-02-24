@@ -36,9 +36,7 @@ public class UserService {
     @Transactional
     public User update(Long id, User updatedUser) {
         User existing =
-                userRepository
-                        .findById(id)
-                        .orElseThrow(() -> new UserNotFoundException(id));
+                userRepository.findById(id).orElseThrow(() -> new UserNotFoundException(id));
 
         if (!existing.getEmail().equals(updatedUser.getEmail())
                 && userRepository.existsByEmail(updatedUser.getEmail())) {
