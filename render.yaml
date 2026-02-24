@@ -1,21 +1,21 @@
 services:
-  # 1. O Backend (Spring Boot Docker)
+  # =============================================
+  # 1. STAGING — Auto-deploy a cada push na main
+  # =============================================
   - type: web
-    name: library-backend
+    name: library-backend-staging
     runtime: docker
-    repo: https://github.com/Filipe-code0/Grupo11_PDS
+    repo: https://github.com/GrupoPDS/Grupo11_PDS
     branch: main
     rootDir: backend
     plan: free
     region: oregon
-    previewsEnabled: true
+    autoDeploy: true
     envVars:
       - key: SPRING_PROFILES_ACTIVE
-        value: prod
+        value: staging
       - key: PORT
         value: 8080
-      # Render connectionString usa formato postgresql:// (sem jdbc:)
-      # Por isso passamos host/port/name separados para o Spring montar jdbc:postgresql://
       - key: DB_HOST
         fromDatabase:
           name: library-db
@@ -37,12 +37,49 @@ services:
           name: library-db
           property: password
 
-  # 2. O Banco de Dados (Postgres Gerenciado pelo Render)
+  # =============================================
+  # 2. PRODUÇÃO — Deploy APENAS via Release Hook
+  # =============================================
+  - type: web
+    name: library-backend-prod
+    runtime: docker
+    repo: https://github.com/GrupoPDS/Grupo11_PDS
+    branch: main
+    rootDir: backend
+    plan: free
+    region: oregon
+    autoDeploy: false
+    envVars:
+      - key: SPRING_PROFILES_ACTIVE
+        value: prod
+      - key: PORT
+        value: 8080
+      - key: DB_HOST
+        fromDatabase:
+          name: library-db
+          property: host
+      - key: DB_PORT
+        fromDatabase:
+          name: library-db
+          property: port
+      - key: DB_NAME
+        fromDatabase:
+          name: library-db
+          property: database
+      - key: DB_USER
+        fromDatabase:
+          name: library-db
+          property: user
+      - key: DB_PASS
+        fromDatabase:
+          name: library-db
+          property: password
+
+# =============================================
+# Bancos de Dados (Apenas UM no plano Free)
+# =============================================
 databases:
   - name: library-db
     plan: free
-    databaseName: library
+    databaseName: library_db
     user: ufu_user
-    previewsEnabled: true
-
-# (O Frontend Vercel é configurado separadamente pois é outra plataforma)
