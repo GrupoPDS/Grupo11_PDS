@@ -1,0 +1,140 @@
+name: "🟡 Staging — Branch Main"
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  # =============================================
+  # Job 1: Backend — Lint + Testes
+  # =============================================
+  backend-checks:
+    name: "☕ Backend (Java)"
+    runs-on: ubuntu-latest
+    if: ${{ !startsWith(github.event.head_commit.message, 'migration:') }}
+
+    defaults:
+      run:
+        working-directory: ./backend
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up JDK 17
+      uses: actions/setup-java@v4
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+        cache: 'maven'
+
+    - name: "🎨 Check Code Formatting (Spotless)"
+      run: ./mvnw spotless:check -q
+
+    - name: "🧪 Run Tests (JUnit + Mockito)"
+      run: ./mvnw test
+
+    - name: "📋 Verify Flyway Migrations Naming"
+      run: |
+        if ls src/main/resources/db/migration | grep -vE '^V[0-9]+__.*\.sql$'; then
+          echo "❌ Arquivos de migração fora do padrão!"
+          exit 1
+        fi
+        echo "✅ Migrações OK."
+
+  # =============================================
+  # Job 2: Frontend — Lint + Prettier
+  # =============================================
+  frontend-checks:
+    name: "⚛️ Frontend (React)"
+    runs-on: ubuntu-latest
+    if: ${{ !startsWith(github.event.head_commit.message, 'migration:') }}
+
+    defaults:
+      run:
+        working-directory: ./frontend
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Node.js 20
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        cache: 'npm'
+        cache-dependency-path: frontend/package-lock.json
+
+    - name: Install Dependencies
+      run: npm ci
+
+    - name: "🎨 Check Formatting (Prettier)"
+      run: npx prettier --check .
+
+    - name: "🔍 Lint (ESLint)"
+      run: npm run lint
+
+  # =============================================
+  # Job 3: Docker Build + Trivy Security Scan
+  # =============================================
+  docker-build-check:
+    name: "🐳 Docker Build + Security"
+    needs: [backend-checks, frontend-checks]
+    runs-on: ubuntu-latest
+    if: ${{ !startsWith(github.event.head_commit.message, 'migration:') }}
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+
+    - name: Build Backend Image (Dry Run)
+      uses: docker/build-push-action@v5
+      with:
+        context: ./backend
+        file: ./backend/Dockerfile
+        push: false
+        load: true
+        tags: library-backend:test
+
+    - name: "🔒 Trivy Vulnerability Scanner"
+      uses: aquasecurity/trivy-action@master
+      with:
+        image-ref: 'library-backend:test'
+        format: 'table'
+        exit-code: '1'
+        severity: 'CRITICAL'
+
+  # =============================================
+  # Job 4: Migration Check (apenas commits de migração)
+  # =============================================
+  migration-check:
+    name: "🗄️ Migration Check"
+    runs-on: ubuntu-latest
+    if: ${{ startsWith(github.event.head_commit.message, 'migration:') }}
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: "📋 Verify Flyway Migrations Naming"
+      run: |
+        echo "🔍 Verificando nomenclatura das migrações..."
+        ERRORS=0
+        for file in backend/src/main/resources/db/migration/*; do
+          filename=$(basename "$file")
+          if ! echo "$filename" | grep -qE '^V[0-9]+__.*\.sql$'; then
+            echo "❌ Fora do padrão: $filename"
+            ERRORS=$((ERRORS + 1))
+          fi
+        done
+        if [ "$ERRORS" -gt 0 ]; then
+          echo "❌ $ERRORS arquivo(s) fora do padrão V<versão>__<Descrição>.sql"
+          exit 1
+        fi
+        echo "✅ Todas as migrações seguem o padrão Flyway."
+
+    - name: "📊 List All Migrations"
+      run: ls -la backend/src/main/resources/db/migration/
+
+  # ℹ️ Deploy para Staging é automático:
+  # - Render detecta push na main e faz redeploy do backend
+  # - Vercel detecta push na main e faz redeploy do frontend

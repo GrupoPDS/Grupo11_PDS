@@ -11,7 +11,9 @@
   gap: 10px;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
   z-index: 999;
-  animation: slideIn 0.3s ease-out, slideOut 0.3s ease-out 3.7s forwards;
+  animation:
+    slideIn 0.3s ease-out,
+    slideOut 0.3s ease-out 3.7s forwards;
 }
 
 @keyframes slideIn {

@@ -1,20 +1,16 @@
-name: CI Pipeline — Library System UFU
+name: "🟢 Production — Release"
 
 on:
-  push:
-    branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
+  release:
+    types: [ published ]
 
 jobs:
   # =============================================
   # Job 1: Backend — Lint + Testes
-  # Pula se commit for apenas migration
   # =============================================
   backend-checks:
     name: "☕ Backend (Java)"
     runs-on: ubuntu-latest
-    if: ${{ !startsWith(github.event.head_commit.message, 'migration:') }}
 
     defaults:
       run:
@@ -46,12 +42,10 @@ jobs:
 
   # =============================================
   # Job 2: Frontend — Lint + Prettier
-  # Pula se commit for apenas migration
   # =============================================
   frontend-checks:
     name: "⚛️ Frontend (React)"
     runs-on: ubuntu-latest
-    if: ${{ !startsWith(github.event.head_commit.message, 'migration:') }}
 
     defaults:
       run:
@@ -77,14 +71,12 @@ jobs:
       run: npm run lint
 
   # =============================================
-  # Job 3: Docker Build + Security Scan
-  # Pula se commit for apenas migration
+  # Job 3: Docker Build + Trivy Security Scan
   # =============================================
   docker-build-check:
     name: "🐳 Docker Build + Security"
     needs: [backend-checks, frontend-checks]
     runs-on: ubuntu-latest
-    if: ${{ !startsWith(github.event.head_commit.message, 'migration:') }}
 
     steps:
     - uses: actions/checkout@v4
@@ -92,53 +84,50 @@ jobs:
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v3
 
-    - name: Build Backend Image (Dry Run)
+    - name: Build Backend Image
       uses: docker/build-push-action@v5
       with:
         context: ./backend
         file: ./backend/Dockerfile
         push: false
         load: true
-        tags: library-backend:test
+        tags: library-backend:release
 
     - name: "🔒 Trivy Vulnerability Scanner"
       uses: aquasecurity/trivy-action@master
       with:
-        image-ref: 'library-backend:test'
+        image-ref: 'library-backend:release'
         format: 'table'
         exit-code: '1'
         severity: 'CRITICAL'
 
   # =============================================
-  # Job 4: Migration Check (apenas para commits de migração)
+  # Job 4: Deploy para Produção
   # =============================================
-  migration-check:
-    name: "🗄️ Migration Check"
+  deploy-production:
+    name: "🚀 Deploy Production"
+    needs: [backend-checks, frontend-checks, docker-build-check]
     runs-on: ubuntu-latest
-    if: ${{ startsWith(github.event.head_commit.message, 'migration:') }}
+    environment: production
 
     steps:
-    - uses: actions/checkout@v4
-
-    - name: "📋 Verify Flyway Migrations Naming"
+    - name: "🚀 Trigger Render Production Deploy"
       run: |
-        echo "🔍 Verificando nomenclatura das migrações..."
-        ERRORS=0
-        for file in backend/src/main/resources/db/migration/*; do
-          filename=$(basename "$file")
-          if ! echo "$filename" | grep -qE '^V[0-9]+__.*\.sql$'; then
-            echo "❌ Fora do padrão: $filename"
-            ERRORS=$((ERRORS + 1))
-          fi
-        done
-        if [ "$ERRORS" -gt 0 ]; then
-          echo ""
-          echo "❌ $ERRORS arquivo(s) fora do padrão V<versão>__<Descrição>.sql"
+        echo "🔄 Acionando deploy de produção no Render..."
+        RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" -X POST "${{ secrets.RENDER_PROD_DEPLOY_HOOK }}")
+        if [ "$RESPONSE" -eq 200 ] || [ "$RESPONSE" -eq 201 ]; then
+          echo "✅ Deploy acionado com sucesso! (HTTP $RESPONSE)"
+        else
+          echo "❌ Falha ao acionar deploy! (HTTP $RESPONSE)"
           exit 1
         fi
-        echo "✅ Todas as migrações seguem o padrão Flyway."
 
-    - name: "📊 List All Migrations"
+    - name: "📝 Release Summary"
       run: |
-        echo "📂 Migrações encontradas:"
-        ls -la backend/src/main/resources/db/migration/
+        echo "=========================================="
+        echo "🟢 PRODUÇÃO — Deploy acionado!"
+        echo "=========================================="
+        echo "Release: ${{ github.event.release.tag_name }}"
+        echo "Título:  ${{ github.event.release.name }}"
+        echo "Autor:   ${{ github.event.release.author.login }}"
+        echo "=========================================="

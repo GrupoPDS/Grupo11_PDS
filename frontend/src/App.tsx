@@ -192,11 +192,7 @@ function App() {
               </select>
             </div>
 
-            <button
-              type="submit"
-              disabled={!canSubmit}
-              className="submit-btn"
-            >
+            <button type="submit" disabled={!canSubmit} className="submit-btn">
               {loading ? '⏳ Enviando...' : '➕ Cadastrar'}
             </button>
             <p className="form-hint">Todos os campos marcados com * são obrigatórios</p>
@@ -217,7 +213,9 @@ function App() {
                     <h3>{book.title}</h3>
                     <span className="category-badge">{book.category}</span>
                   </div>
-                  <p className="book-author">por <strong>{book.author}</strong></p>
+                  <p className="book-author">
+                    por <strong>{book.author}</strong>
+                  </p>
                   <p className="book-isbn">ISBN: {book.isbn}</p>
                   <p className="book-quantity">Quantidade: {book.quantity}</p>
                 </div>

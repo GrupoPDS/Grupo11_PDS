@@ -32,12 +32,8 @@ public class BookController {
             responseCode = "201",
             description = "Livro cadastrado com sucesso",
             content = @Content(schema = @Schema(implementation = BookResponse.class)))
-    @ApiResponse(
-            responseCode = "409",
-            description = "ISBN já existe no sistema (Duplicate)")
-    @ApiResponse(
-            responseCode = "400",
-            description = "Dados inválidos ou incompletos")
+    @ApiResponse(responseCode = "409", description = "ISBN já existe no sistema (Duplicate)")
+    @ApiResponse(responseCode = "400", description = "Dados inválidos ou incompletos")
     public ResponseEntity<BookResponse> create(@Valid @RequestBody CreateBookRequest request) {
         Book book =
                 Book.builder()
