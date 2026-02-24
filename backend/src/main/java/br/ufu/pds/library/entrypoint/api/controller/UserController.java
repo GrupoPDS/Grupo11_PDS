@@ -14,6 +14,7 @@ import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -25,6 +26,7 @@ public class UserController {
     private final UserService userService;
 
     @PostMapping
+    @PreAuthorize("hasRole('ADMIN')")
     @Operation(
             summary = "Cadastrar um novo usuário",
             description = "Cria um novo usuário no sistema")
@@ -47,6 +49,7 @@ public class UserController {
     }
 
     @GetMapping
+    @PreAuthorize("hasAnyRole('ADMIN', 'LIBRARIAN')")
     @Operation(
             summary = "Listar todos os usuários",
             description = "Retorna uma lista de todos os usuários")
@@ -61,6 +64,7 @@ public class UserController {
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'LIBRARIAN')")
     @Operation(summary = "Obter usuário por ID", description = "Retorna um usuário pelo seu ID")
     public ResponseEntity<UserResponse> getById(@PathVariable Long id) {
         User user = userService.findById(id);
@@ -68,6 +72,7 @@ public class UserController {
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     @Operation(
             summary = "Atualizar usuário",
             description = "Atualiza os dados de um usuário existente")
@@ -86,6 +91,7 @@ public class UserController {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Remover usuário", description = "Remove um usuário pelo ID")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         userService.delete(id);
