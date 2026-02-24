@@ -41,12 +41,12 @@ public class UserServiceTest {
     void save_success_whenEmailNotExists() {
         when(userRepository.existsByEmail(user.getEmail())).thenReturn(false);
         when(userRepository.save(any(User.class)))
-            .thenAnswer(
-                inv -> {
-                  User u = inv.getArgument(0);
-                  u.setId(1L);
-                  return u;
-                });
+                .thenAnswer(
+                        inv -> {
+                          User u = inv.getArgument(0);
+                          u.setId(1L);
+                          return u;
+                        });
 
         User saved = userService.save(user);
         assertEquals(1L, saved.getId());
