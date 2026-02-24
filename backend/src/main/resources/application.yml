@@ -47,3 +47,11 @@ logging:
     br.ufu.pds.library: ${LOG_LEVEL:DEBUG}
     org.hibernate.SQL: WARN
     org.flywaydb: INFO
+
+# =============================================
+# JWT — Autenticação
+# =============================================
+jwt:
+  secret: ${JWT_SECRET:chave-secreta-dev-apenas-para-desenvolvimento-local-minimo-256-bits-ok}
+  access-token-expiration: 900000       # 15 minutos em ms
+  refresh-token-expiration: 604800000   # 7 dias em ms

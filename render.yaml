@@ -36,8 +36,11 @@ services:
         fromDatabase:
           name: library-db
           property: password
+      - key: JWT_SECRET
+        generateValue: true
+      - key: CORS_ORIGINS
+        value: http://localhost:5173,http://localhost:3000
 
-  # =============================================
   # 2. PRODUÇÃO — Deploy APENAS via Release Hook
   # =============================================
   - type: web
@@ -74,6 +77,10 @@ services:
         fromDatabase:
           name: library-db
           property: password
+      - key: JWT_SECRET
+        generateValue: true
+      - key: CORS_ORIGINS
+        value: http://localhost:5173,http://localhost:3000
 
 # =============================================
 # Bancos de Dados (Apenas UM no plano Free)
