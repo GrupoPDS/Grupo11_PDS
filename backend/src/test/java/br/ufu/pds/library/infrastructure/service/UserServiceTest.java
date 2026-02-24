@@ -43,9 +43,9 @@ public class UserServiceTest {
         when(userRepository.save(any(User.class)))
                 .thenAnswer(
                         inv -> {
-                          User u = inv.getArgument(0);
-                          u.setId(1L);
-                          return u;
+                            User u = inv.getArgument(0);
+                            u.setId(1L);
+                            return u;
                         });
 
         User saved = userService.save(user);

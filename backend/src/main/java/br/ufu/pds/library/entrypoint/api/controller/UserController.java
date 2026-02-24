@@ -56,7 +56,7 @@ public class UserController {
             content = @Content(schema = @Schema(implementation = UserResponse.class)))
     public ResponseEntity<List<UserResponse>> listAll() {
         List<UserResponse> users =
-            userService.findAll().stream().map(UserResponse::fromEntity).toList();
+                userService.findAll().stream().map(UserResponse::fromEntity).toList();
         return ResponseEntity.ok(users);
     }
 
@@ -68,7 +68,9 @@ public class UserController {
     }
 
     @PutMapping("/{id}")
-    @Operation(summary = "Atualizar usuário", description = "Atualiza os dados de um usuário existente")
+    @Operation(
+            summary = "Atualizar usuário",
+            description = "Atualiza os dados de um usuário existente")
     public ResponseEntity<UserResponse> update(
             @PathVariable Long id, @Valid @RequestBody CreateUserRequest request) {
         User updated =
