@@ -34,12 +34,13 @@ public class UserController {
             content = @Content(schema = @Schema(implementation = UserResponse.class)))
     @ApiResponse(responseCode = "409", description = "Email já existe no sistema")
     public ResponseEntity<UserResponse> create(@Valid @RequestBody CreateUserRequest request) {
-        User user = User.builder()
-                .name(request.getName())
-                .email(request.getEmail())
-                .password(request.getPassword())
-                .role(request.getRole())
-                .build();
+        User user =
+                User.builder()
+                        .name(request.getName())
+                        .email(request.getEmail())
+                        .password(request.getPassword())
+                        .role(request.getRole())
+                        .build();
 
         User saved = userService.save(user);
         return ResponseEntity.status(HttpStatus.CREATED).body(UserResponse.fromEntity(saved));
@@ -68,13 +69,15 @@ public class UserController {
 
     @PutMapping("/{id}")
     @Operation(summary = "Atualizar usuário", description = "Atualiza os dados de um usuário existente")
-    public ResponseEntity<UserResponse> update(@PathVariable Long id, @Valid @RequestBody CreateUserRequest request) {
-        User updated = User.builder()
-                .name(request.getName())
-                .email(request.getEmail())
-                .password(request.getPassword())
-                .role(request.getRole())
-                .build();
+    public ResponseEntity<UserResponse> update(
+            @PathVariable Long id, @Valid @RequestBody CreateUserRequest request) {
+        User updated =
+                User.builder()
+                        .name(request.getName())
+                        .email(request.getEmail())
+                        .password(request.getPassword())
+                        .role(request.getRole())
+                        .build();
 
         User saved = userService.update(id, updated);
         return ResponseEntity.ok(UserResponse.fromEntity(saved));
