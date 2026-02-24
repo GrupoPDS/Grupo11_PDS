@@ -55,7 +55,7 @@ public class UserController {
             content = @Content(schema = @Schema(implementation = UserResponse.class)))
     public ResponseEntity<List<UserResponse>> listAll() {
         List<UserResponse> users =
-                userService.findAll().stream().map(UserResponse::fromEntity).toList();
+            userService.findAll().stream().map(UserResponse::fromEntity).toList();
         return ResponseEntity.ok(users);
     }
 

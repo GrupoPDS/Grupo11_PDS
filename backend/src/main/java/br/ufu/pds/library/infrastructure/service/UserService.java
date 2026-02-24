@@ -31,20 +31,20 @@ public class UserService {
     @Transactional(readOnly = true)
     public User findById(Long id) {
         return userRepository
-                .findById(id)
-                .orElseThrow(() -> new UserNotFoundException(id));
+            .findById(id)
+            .orElseThrow(() -> new UserNotFoundException(id));
     }
 
     @Transactional
     public User update(Long id, User updatedUser) {
         User existing =
-                userRepository
-                        .findById(id)
-                        .orElseThrow(() -> new UserNotFoundException(id));
+            userRepository
+                .findById(id)
+                .orElseThrow(() -> new UserNotFoundException(id));
 
         if (!existing.getEmail().equals(updatedUser.getEmail())
-                && userRepository.existsByEmail(updatedUser.getEmail())) {
-            throw new DuplicateEmailException(updatedUser.getEmail());
+            && userRepository.existsByEmail(updatedUser.getEmail())) {
+          throw new DuplicateEmailException(updatedUser.getEmail());
         }
 
         existing.setName(updatedUser.getName());
