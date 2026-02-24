@@ -25,8 +25,13 @@ public class UserController {
     private final UserService userService;
 
     @PostMapping
-    @Operation(summary = "Cadastrar um novo usuário", description = "Cria um novo usuário no sistema")
-    @ApiResponse(responseCode = "201", description = "Usuário cadastrado com sucesso", content = @Content(schema = @Schema(implementation = UserResponse.class)))
+    @Operation(
+        summary = "Cadastrar um novo usuário",
+        description = "Cria um novo usuário no sistema")
+    @ApiResponse(
+        responseCode = "201",
+        description = "Usuário cadastrado com sucesso",
+        content = @Content(schema = @Schema(implementation = UserResponse.class)))
     @ApiResponse(responseCode = "409", description = "Email já existe no sistema")
     public ResponseEntity<UserResponse> create(@Valid @RequestBody CreateUserRequest request) {
         User user = User.builder()
@@ -41,8 +46,13 @@ public class UserController {
     }
 
     @GetMapping
-    @Operation(summary = "Listar todos os usuários", description = "Retorna uma lista de todos os usuários")
-    @ApiResponse(responseCode = "200", description = "Lista retornada com sucesso", content = @Content(schema = @Schema(implementation = UserResponse.class)))
+    @Operation(
+        summary = "Listar todos os usuários",
+        description = "Retorna uma lista de todos os usuários")
+    @ApiResponse(
+        responseCode = "200",
+        description = "Lista retornada com sucesso",
+        content = @Content(schema = @Schema(implementation = UserResponse.class)))
     public ResponseEntity<List<UserResponse>> listAll() {
         List<UserResponse> users = userService.findAll().stream().map(UserResponse::fromEntity).toList();
         return ResponseEntity.ok(users);
