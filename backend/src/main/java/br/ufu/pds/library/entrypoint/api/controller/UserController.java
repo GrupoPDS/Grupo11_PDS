@@ -1,6 +1,5 @@
 package br.ufu.pds.library.entrypoint.api.controller;
 
-import br.ufu.pds.library.core.domain.User;
 import br.ufu.pds.library.entrypoint.api.dto.CreateUserRequest;
 import br.ufu.pds.library.entrypoint.api.dto.UserResponse;
 import br.ufu.pds.library.infrastructure.service.UserService;
@@ -36,16 +35,8 @@ public class UserController {
             content = @Content(schema = @Schema(implementation = UserResponse.class)))
     @ApiResponse(responseCode = "409", description = "Email já existe no sistema")
     public ResponseEntity<UserResponse> create(@Valid @RequestBody CreateUserRequest request) {
-        User user =
-                User.builder()
-                        .name(request.getName())
-                        .email(request.getEmail())
-                        .password(request.getPassword())
-                        .role(request.getRole())
-                        .build();
-
-        User saved = userService.save(user);
-        return ResponseEntity.status(HttpStatus.CREATED).body(UserResponse.fromEntity(saved));
+        UserResponse saved = userService.create(request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(saved);
     }
 
     @GetMapping
@@ -58,8 +49,7 @@ public class UserController {
             description = "Lista retornada com sucesso",
             content = @Content(schema = @Schema(implementation = UserResponse.class)))
     public ResponseEntity<List<UserResponse>> listAll() {
-        List<UserResponse> users =
-                userService.findAll().stream().map(UserResponse::fromEntity).toList();
+        List<UserResponse> users = userService.findAll();
         return ResponseEntity.ok(users);
     }
 
@@ -67,8 +57,8 @@ public class UserController {
     @PreAuthorize("hasAnyRole('ADMIN', 'LIBRARIAN')")
     @Operation(summary = "Obter usuário por ID", description = "Retorna um usuário pelo seu ID")
     public ResponseEntity<UserResponse> getById(@PathVariable Long id) {
-        User user = userService.findById(id);
-        return ResponseEntity.ok(UserResponse.fromEntity(user));
+        UserResponse user = userService.getById(id);
+        return ResponseEntity.ok(user);
     }
 
     @PutMapping("/{id}")
@@ -78,23 +68,15 @@ public class UserController {
             description = "Atualiza os dados de um usuário existente")
     public ResponseEntity<UserResponse> update(
             @PathVariable Long id, @Valid @RequestBody CreateUserRequest request) {
-        User updated =
-                User.builder()
-                        .name(request.getName())
-                        .email(request.getEmail())
-                        .password(request.getPassword())
-                        .role(request.getRole())
-                        .build();
-
-        User saved = userService.update(id, updated);
-        return ResponseEntity.ok(UserResponse.fromEntity(saved));
+        UserResponse saved = userService.update(id, request);
+        return ResponseEntity.ok(saved);
     }
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    @Operation(summary = "Remover usuário", description = "Remove um usuário pelo ID")
+    @Operation(summary = "Remover usuário", description = "Remove um usuário pelo ID (soft delete)")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
-        userService.delete(id);
+        userService.deactivate(id);
         return ResponseEntity.noContent().build();
     }
 }
