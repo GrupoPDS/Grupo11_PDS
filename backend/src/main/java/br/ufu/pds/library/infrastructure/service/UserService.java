@@ -19,15 +19,15 @@ public class UserService {
 
     @Transactional
     public UserResponse create(CreateUserRequest request) {
-        if (userRepository.existsByEmail(request.getEmail())) {
-            throw new DuplicateEmailException(request.getEmail());
+        if (userRepository.existsByEmail(request.email())) {
+            throw new DuplicateEmailException(request.email());
         }
 
         User user = User.builder()
-                .name(request.getName())
-                .email(request.getEmail())
-                .password(request.getPassword())
-                .role(request.getRole())
+                .name(request.name())
+                .email(request.email())
+                .phone(request.phone())
+                .role(request.role())
                 .build();
 
         User saved = userRepository.save(user);
@@ -51,15 +51,15 @@ public class UserService {
     public UserResponse update(Long id, CreateUserRequest request) {
         User existing = userRepository.findById(id).orElseThrow(() -> new UserNotFoundException(id));
 
-        if (!existing.getEmail().equals(request.getEmail())
-                && userRepository.existsByEmail(request.getEmail())) {
-            throw new DuplicateEmailException(request.getEmail());
+        if (!existing.getEmail().equals(request.email())
+                && userRepository.existsByEmail(request.email())) {
+            throw new DuplicateEmailException(request.email());
         }
 
-        existing.setName(request.getName());
-        existing.setEmail(request.getEmail());
-        existing.setPassword(request.getPassword());
-        existing.setRole(request.getRole());
+        existing.setName(request.name());
+        existing.setEmail(request.email());
+        existing.setPhone(request.phone());
+        existing.setRole(request.role());
 
         User saved = userRepository.save(existing);
         return UserResponse.fromEntity(saved);
