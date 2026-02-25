@@ -30,12 +30,19 @@ public class User implements UserDetails {
     private String email;
 
     @JsonIgnore
-    @Column(name = "password")
+    @Column(name = "password", length = 255)
     private String password;
 
-    @Column(length = 50)
+    @Column(length = 20)
+    private String phone;
+
+    @Column(nullable = false, length = 50)
     @Builder.Default
     private String role = "STUDENT";
+
+    @Column(nullable = false)
+    @Builder.Default
+    private Boolean active = true;
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
@@ -85,6 +92,6 @@ public class User implements UserDetails {
 
     @Override
     public boolean isEnabled() {
-        return true;
+        return Boolean.TRUE.equals(active);
     }
 }
