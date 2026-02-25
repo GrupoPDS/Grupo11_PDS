@@ -1,9 +1,12 @@
 package br.ufu.pds.library.entrypoint.api.controller;
 
+import br.ufu.pds.library.core.exceptions.BookNotAvailableException;
 import br.ufu.pds.library.core.exceptions.BookNotFoundException;
 import br.ufu.pds.library.core.exceptions.BusinessException;
 import br.ufu.pds.library.core.exceptions.DuplicateEmailException;
 import br.ufu.pds.library.core.exceptions.DuplicateIsbnException;
+import br.ufu.pds.library.core.exceptions.InvalidLoanStatusException;
+import br.ufu.pds.library.core.exceptions.LoanNotFoundException;
 import br.ufu.pds.library.core.exceptions.UserNotFoundException;
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -49,6 +52,26 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(UserNotFoundException.class)
     public ResponseEntity<Map<String, Object>> handleUserNotFound(UserNotFoundException ex) {
         return buildErrorResponse(HttpStatus.NOT_FOUND, ex.getMessage());
+    }
+
+    /** Empréstimo não encontrado → 404 Not Found */
+    @ExceptionHandler(LoanNotFoundException.class)
+    public ResponseEntity<Map<String, Object>> handleLoanNotFound(LoanNotFoundException ex) {
+        return buildErrorResponse(HttpStatus.NOT_FOUND, ex.getMessage());
+    }
+
+    /** Livro sem exemplares disponíveis → 409 Conflict */
+    @ExceptionHandler(BookNotAvailableException.class)
+    public ResponseEntity<Map<String, Object>> handleBookNotAvailable(
+            BookNotAvailableException ex) {
+        return buildErrorResponse(HttpStatus.CONFLICT, ex.getMessage());
+    }
+
+    /** Status de empréstimo inválido para a operação → 400 Bad Request */
+    @ExceptionHandler(InvalidLoanStatusException.class)
+    public ResponseEntity<Map<String, Object>> handleInvalidLoanStatus(
+            InvalidLoanStatusException ex) {
+        return buildErrorResponse(HttpStatus.BAD_REQUEST, ex.getMessage());
     }
 
     // =============================================
