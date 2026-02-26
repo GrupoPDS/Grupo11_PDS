@@ -85,7 +85,9 @@ public class UserController {
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    @Operation(summary = "Desativar usuário", description = "Desativa (soft delete) um usuário pelo ID")
+    @Operation(
+            summary = "Desativar usuário",
+            description = "Desativa (soft delete) um usuário pelo ID")
     @ApiResponse(responseCode = "204", description = "Usuário desativado com sucesso")
     @ApiResponse(responseCode = "404", description = "Usuário não encontrado")
     public ResponseEntity<Void> delete(@PathVariable Long id) {

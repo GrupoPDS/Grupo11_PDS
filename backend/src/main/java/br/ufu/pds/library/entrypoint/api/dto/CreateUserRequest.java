@@ -9,21 +9,13 @@ import jakarta.validation.constraints.Size;
  * exposição direta da entidade e prevenir mass-assignment.
  */
 public record CreateUserRequest(
-        @NotBlank(message = "O nome é obrigatório")
-        @Size(max = 255)
-        String name,
-
+        @NotBlank(message = "O nome é obrigatório") @Size(max = 255) String name,
         @NotBlank(message = "O email é obrigatório")
-        @Email(message = "Email inválido")
-        @Size(max = 255)
-        String email,
-
-        @Size(max = 20)
-        String phone,
-
-        @Size(max = 50)
-        String role
-) {
+                @Email(message = "Email inválido")
+                @Size(max = 255)
+                String email,
+        @Size(max = 20) String phone,
+        @Size(max = 50) String role) {
     public CreateUserRequest {
         if (role == null || role.isBlank()) {
             role = "STUDENT";

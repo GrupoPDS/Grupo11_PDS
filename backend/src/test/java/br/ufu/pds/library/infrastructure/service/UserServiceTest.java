@@ -45,15 +45,17 @@ public class UserServiceTest {
 
     @Test
     void should_create_user_when_emailNotExists() {
-        CreateUserRequest req = new CreateUserRequest("João", "joao@example.com", "123456789", "STUDENT");
+        CreateUserRequest req =
+                new CreateUserRequest("João", "joao@example.com", "123456789", "STUDENT");
 
         when(userRepository.existsByEmail(req.email())).thenReturn(false);
         when(userRepository.save(any(User.class)))
-                .thenAnswer(inv -> {
-                    User u = inv.getArgument(0);
-                    u.setId(1L);
-                    return u;
-                });
+                .thenAnswer(
+                        inv -> {
+                            User u = inv.getArgument(0);
+                            u.setId(1L);
+                            return u;
+                        });
 
         UserResponse resp = userService.create(req);
 
@@ -65,7 +67,8 @@ public class UserServiceTest {
 
     @Test
     void should_throw_DuplicateEmailException_when_emailAlreadyExists() {
-        CreateUserRequest req = new CreateUserRequest("João", "joao@example.com", "123456789", "STUDENT");
+        CreateUserRequest req =
+                new CreateUserRequest("João", "joao@example.com", "123456789", "STUDENT");
         when(userRepository.existsByEmail(req.email())).thenReturn(true);
 
         assertThrows(DuplicateEmailException.class, () -> userService.create(req));
@@ -96,8 +99,22 @@ public class UserServiceTest {
 
     @Test
     void should_list_only_active_users() {
-        User u1 = User.builder().id(1L).name("A").email("a@example.com").active(true).role("STUDENT").build();
-        User u2 = User.builder().id(2L).name("B").email("b@example.com").active(true).role("STUDENT").build();
+        User u1 =
+                User.builder()
+                        .id(1L)
+                        .name("A")
+                        .email("a@example.com")
+                        .active(true)
+                        .role("STUDENT")
+                        .build();
+        User u2 =
+                User.builder()
+                        .id(2L)
+                        .name("B")
+                        .email("b@example.com")
+                        .active(true)
+                        .role("STUDENT")
+                        .build();
 
         when(userRepository.findByActiveTrue()).thenReturn(List.of(u1, u2));
 

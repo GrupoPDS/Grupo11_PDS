@@ -4,29 +4,24 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
+    <groupId>br.ufu.pds</groupId>
+    <artifactId>library-system</artifactId>
+    <version>1.0.0</version>
+    <name>Library System</name>
+    <description>Sistema de Gerenciamento de Biblioteca</description>
+
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.4.5</version>
+        <version>3.2.5</version>
         <relativePath/>
     </parent>
 
-    <groupId>br.ufu.pds</groupId>
-    <artifactId>library</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
-    <name>Library System UFU</name>
-    <description>Sistema de Biblioteca - PDS UFU</description>
-
     <properties>
         <java.version>17</java.version>
-        <springdoc.version>2.5.0</springdoc.version>
-        <jacoco.version>0.8.12</jacoco.version>
-        <flyway.version>10.10.0</flyway.version>
-        <!-- Overrides de segurança (CVEs detectados pelo Trivy) -->
-        <tomcat.version>10.1.45</tomcat.version>
-        <postgresql.version>42.7.7</postgresql.version>
-        <spring-framework.version>6.2.11</spring-framework.version>
-        <spring-security.version>6.4.6</spring-security.version>
+        <flyway.version>9.22.3</flyway.version>
+        <springdoc.version>2.2.0</springdoc.version>
+        <jacoco.version>0.8.10</jacoco.version>
     </properties>
 
     <dependencies>
@@ -132,11 +127,13 @@
                 </configuration>
             </plugin>
 
-            <!-- Maven Compiler — Lombok annotation processor (required for Java 21+) -->
+            <!-- Maven Compiler — Lombok annotation processor (required for Java 17+) -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <configuration>
+                    <source>17</source>
+                    <target>17</target>
                     <annotationProcessorPaths>
                         <path>
                             <groupId>org.projectlombok</groupId>

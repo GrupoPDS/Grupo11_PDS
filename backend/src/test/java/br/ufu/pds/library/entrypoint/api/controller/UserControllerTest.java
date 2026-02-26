@@ -33,8 +33,17 @@ public class UserControllerTest {
 
     @Test
     void should_return_201_when_post_valid() throws Exception {
-        CreateUserRequest req = new CreateUserRequest("João", "joao@example.com", "123456789", "STUDENT");
-        UserResponse resp = new UserResponse(1L, "João", "joao@example.com", "123456789", "STUDENT", true, LocalDateTime.now());
+        CreateUserRequest req =
+                new CreateUserRequest("João", "joao@example.com", "123456789", "STUDENT");
+        UserResponse resp =
+                new UserResponse(
+                        1L,
+                        "João",
+                        "joao@example.com",
+                        "123456789",
+                        "STUDENT",
+                        true,
+                        LocalDateTime.now());
 
         when(userService.create(any(CreateUserRequest.class))).thenReturn(resp);
 
@@ -47,7 +56,8 @@ public class UserControllerTest {
 
     @Test
     void should_return_400_when_post_invalidEmail() throws Exception {
-        CreateUserRequest req = new CreateUserRequest("João", "invalid-email", "123456789", "STUDENT");
+        CreateUserRequest req =
+                new CreateUserRequest("João", "invalid-email", "123456789", "STUDENT");
 
         mockMvc.perform(
                         post("/api/users")
@@ -58,8 +68,10 @@ public class UserControllerTest {
 
     @Test
     void should_return_409_when_post_duplicateEmail() throws Exception {
-        CreateUserRequest req = new CreateUserRequest("João", "joao@example.com", "123456789", "STUDENT");
-        when(userService.create(any(CreateUserRequest.class))).thenThrow(new DuplicateEmailException(req.email()));
+        CreateUserRequest req =
+                new CreateUserRequest("João", "joao@example.com", "123456789", "STUDENT");
+        when(userService.create(any(CreateUserRequest.class)))
+                .thenThrow(new DuplicateEmailException(req.email()));
 
         mockMvc.perform(
                         post("/api/users")
@@ -70,9 +82,9 @@ public class UserControllerTest {
 
     @Test
     void should_return_404_when_get_missing() throws Exception {
-        when(userService.getById(99L)).thenThrow(new br.ufu.pds.library.core.exceptions.UserNotFoundException(99L));
+        when(userService.getById(99L))
+                .thenThrow(new br.ufu.pds.library.core.exceptions.UserNotFoundException(99L));
 
         mockMvc.perform(get("/api/users/99")).andExpect(status().isNotFound());
     }
 }
-

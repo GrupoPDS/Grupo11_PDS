@@ -23,12 +23,13 @@ public class UserService {
             throw new DuplicateEmailException(request.email());
         }
 
-        User user = User.builder()
-                .name(request.name())
-                .email(request.email())
-                .phone(request.phone())
-                .role(request.role())
-                .build();
+        User user =
+                User.builder()
+                        .name(request.name())
+                        .email(request.email())
+                        .phone(request.phone())
+                        .role(request.role())
+                        .build();
 
         User saved = userRepository.save(user);
         return UserResponse.fromEntity(saved);
@@ -36,9 +37,7 @@ public class UserService {
 
     @Transactional(readOnly = true)
     public List<UserResponse> findAll() {
-        return userRepository.findByActiveTrue().stream()
-                .map(UserResponse::fromEntity)
-                .toList();
+        return userRepository.findByActiveTrue().stream().map(UserResponse::fromEntity).toList();
     }
 
     @Transactional(readOnly = true)
@@ -49,7 +48,8 @@ public class UserService {
 
     @Transactional
     public UserResponse update(Long id, CreateUserRequest request) {
-        User existing = userRepository.findById(id).orElseThrow(() -> new UserNotFoundException(id));
+        User existing =
+                userRepository.findById(id).orElseThrow(() -> new UserNotFoundException(id));
 
         if (!existing.getEmail().equals(request.email())
                 && userRepository.existsByEmail(request.email())) {
@@ -67,9 +67,11 @@ public class UserService {
 
     @Transactional
     public void deactivate(Long id) {
-        User existing = userRepository.findById(id).orElseThrow(() -> new UserNotFoundException(id));
+        User existing =
+                userRepository.findById(id).orElseThrow(() -> new UserNotFoundException(id));
 
-        // TODO: impedir desativação se o usuário tiver empréstimos ativos — implementar quando o módulo de loans estiver pronto
+        // TODO: impedir desativação se o usuário tiver empréstimos ativos — implementar quando o
+        // módulo de loans estiver pronto
         existing.setActive(false);
         userRepository.save(existing);
     }

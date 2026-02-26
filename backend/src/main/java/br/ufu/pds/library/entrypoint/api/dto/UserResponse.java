@@ -10,8 +10,7 @@ public record UserResponse(
         String phone,
         String role,
         Boolean active,
-        LocalDateTime createdAt
-) {
+        LocalDateTime createdAt) {
     public static UserResponse fromEntity(User user) {
         return new UserResponse(
                 user.getId(),
