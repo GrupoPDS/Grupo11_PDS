@@ -62,4 +62,21 @@ public class BookService {
         }
         bookRepository.deleteById(id);
     }
+
+    // Busca de livros por query (título ou autor)
+    // Se query for vazia ou nula, retorna todos os livros
+    // Caso contrário, realiza busca filtrada no repositório
+    public List<BookResponse> search(String query) {
+        List<Book> books;
+
+        String trimmedQuery = query != null ? query.trim() : "";
+
+        if (trimmedQuery.isEmpty()) {
+            books = bookRepository.findAll();
+        } else {
+            books = bookRepository.search(trimmedQuery);
+        }
+
+        return books.stream().map(this::convertToResponse).toList();
+    }
 }
