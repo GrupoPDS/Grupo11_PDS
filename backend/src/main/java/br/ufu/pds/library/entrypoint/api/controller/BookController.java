@@ -5,37 +5,22 @@ import br.ufu.pds.library.entrypoint.api.dto.BookResponse;
 import br.ufu.pds.library.entrypoint.api.dto.CreateBookRequest;
 import br.ufu.pds.library.infrastructure.service.BookService;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/books")
 @RequiredArgsConstructor
-@Tag(name = "Books", description = "Operações relacionadas a livros")
 public class BookController {
 
     private final BookService bookService;
 
     @PostMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'LIBRARIAN')")
-    @Operation(
-            summary = "Cadastrar um novo livro",
-            description = "Cria um novo livro no sistema com título, autor, ISBN e categoria.")
-    @ApiResponse(
-            responseCode = "201",
-            description = "Livro cadastrado com sucesso",
-            content = @Content(schema = @Schema(implementation = BookResponse.class)))
-    @ApiResponse(responseCode = "409", description = "ISBN já existe no sistema (Duplicate)")
-    @ApiResponse(responseCode = "400", description = "Dados inválidos ou incompletos")
     public ResponseEntity<BookResponse> create(@Valid @RequestBody CreateBookRequest request) {
         Book book =
                 Book.builder()
@@ -45,7 +30,6 @@ public class BookController {
                         .publisher(request.getPublisher())
                         .year(request.getYear())
                         .quantity(request.getQuantity())
-                        .category(request.getCategory())
                         .build();
 
         Book saved = bookService.save(book);
@@ -54,16 +38,23 @@ public class BookController {
 
     @GetMapping
     @Operation(
-            summary = "Listar todos os livros",
-            description = "Retorna uma lista de todos os livros cadastrados no sistema")
-    @ApiResponse(
-            responseCode = "200",
-            description = "Lista de livros retornada com sucesso",
-            content = @Content(schema = @Schema(implementation = BookResponse.class)))
-    public ResponseEntity<List<BookResponse>> listAll() {
+            summary = "Listar ou buscar livros",
+            description =
+                    "Retorna todos os livros ou filtra por título/autor se parâmetro q for fornecido")
+    @ApiResponse(responseCode = "200", description = "Lista de livros retornada com sucesso")
+    public ResponseEntity<List<BookResponse>> list(@RequestParam(required = false) String q) {
         List<BookResponse> books =
-                bookService.findAll().stream().map(BookResponse::fromEntity).toList();
-
+                bookService.search(q).stream().map(BookResponse::fromEntity).toList();
         return ResponseEntity.ok(books);
+    }
+
+    @GetMapping("/{id}")
+    @Operation(
+            summary = "Buscar livro por ID",
+            description = "Retorna um livro específico pelo seu identificador")
+    @ApiResponse(responseCode = "200", description = "Livro encontrado com sucesso")
+    @ApiResponse(responseCode = "404", description = "Livro não encontrado")
+    public ResponseEntity<BookResponse> getById(@PathVariable Long id) {
+        return ResponseEntity.ok(BookResponse.fromEntity(bookService.findById(id)));
     }
 }
