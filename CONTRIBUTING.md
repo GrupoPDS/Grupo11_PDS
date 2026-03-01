@@ -96,6 +96,21 @@ curl http://localhost:8080/api/books
 
 ---
 
+## 🐳 Rodando os Testes Localmente (Padrão GitHub Actions)
+
+Para garantir que seu código vai passar no pipeline do GitHub (CI/CD) antes de abrir um PR, nós padronizamos a execução dos testes via Docker. Isso significa que **todo mundo roda os testes no mesmo ambiente exato** (Java 17 e Node 20), sem o perigo de "na minha máquina funciona".
+
+Para rodar todos os testes, verificação de formatação e linters do Backend e Frontend de uma vez:
+
+```bash
+# Na raiz do projeto, execute:
+./run-tests.sh
+```
+
+Isso vai subir containers temporários (`docker-compose.test.yml`) e testar tudo. Se der `<span style="color:green">✅ Sucesso</span>`, você está pronto para commitar e abrir seu PR!
+
+---
+
 ## ⚠️ A Regra de Ouro do Banco de Dados (Flyway)
 
 > [!CAUTION]
