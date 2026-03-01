@@ -1,8 +1,11 @@
 package br.ufu.pds.library.infrastructure.service;
 
+import br.ufu.pds.library.core.domain.LoanStatus;
 import br.ufu.pds.library.core.domain.User;
 import br.ufu.pds.library.core.exceptions.DuplicateEmailException;
+import br.ufu.pds.library.core.exceptions.UserHasActiveLoansException;
 import br.ufu.pds.library.core.exceptions.UserNotFoundException;
+import br.ufu.pds.library.infrastructure.persistence.LoanRepository;
 import br.ufu.pds.library.infrastructure.persistence.UserRepository;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -14,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class UserService {
 
     private final UserRepository userRepository;
+    private final LoanRepository loanRepository;
 
     @Transactional
     public User save(User user) {
@@ -25,7 +29,7 @@ public class UserService {
 
     @Transactional(readOnly = true)
     public List<User> findAll() {
-        return userRepository.findAll();
+        return userRepository.findByActiveTrue();
     }
 
     @Transactional(readOnly = true)
@@ -53,9 +57,14 @@ public class UserService {
 
     @Transactional
     public void delete(Long id) {
-        if (!userRepository.existsById(id)) {
-            throw new UserNotFoundException(id);
+        User user = userRepository.findById(id).orElseThrow(() -> new UserNotFoundException(id));
+
+        long activeLoans = loanRepository.findByUserIdAndStatus(id, LoanStatus.ACTIVE).size();
+        if (activeLoans > 0) {
+            throw new UserHasActiveLoansException(id);
         }
-        userRepository.deleteById(id);
+
+        user.setActive(false);
+        userRepository.save(user);
     }
 }

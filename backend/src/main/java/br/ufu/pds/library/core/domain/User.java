@@ -33,6 +33,13 @@ public class User implements UserDetails {
     @Column(name = "password")
     private String password;
 
+    @Column(length = 20)
+    private String phone;
+
+    @Column(nullable = false)
+    @Builder.Default
+    private Boolean active = true;
+
     @Column(length = 50)
     @Builder.Default
     private String role = "STUDENT";
