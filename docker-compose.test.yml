@@ -1,0 +1,34 @@
+services:
+  # ==========================================
+  # ☕ Backend Tests (Java 17 + Maven)
+  # Espelha o Job 1 do GitHub Actions
+  # ==========================================
+  backend-test:
+    image: maven:3.9-eclipse-temurin-17-alpine
+    platform: linux/amd64
+    container_name: library-backend-test
+    working_dir: /app/backend
+    volumes:
+      # Monta o diretório raiz na pasta /app do container
+      - ./:/app
+      # Cria um volume nomeado para o cache do Maven (acelera builds repetidos)
+      - maven-repo:/root/.m2
+    command: >
+      sh -c " echo '🎨 Verificando formatação (Spotless)...' && ./mvnw spotless:check -q && echo '🧪 Rodando testes (JUnit + Mockito)...' && ./mvnw test && echo '📋 Verificando nomenclatura do Flyway...' && if ls src/main/resources/db/migration | grep -vE '^V[0-9]+__.*\.sql$$'; then echo '❌ Arquivos de migração fora do padrão!'; exit 1; fi && echo '✅ Sucesso no Backend!' "
+
+  # ==========================================
+  # ⚛️ Frontend Tests (Node 20)
+  # Espelha o Job 2 do GitHub Actions
+  # ==========================================
+  frontend-test:
+    image: node:20-alpine
+    container_name: library-frontend-test
+    working_dir: /app/frontend
+    volumes:
+      # Monta o diretório raiz na pasta /app do container
+      - ./:/app
+    command: >
+      sh -c " echo '📦 Instalando dependências (npm ci)...' && npm ci && echo '🎨 Verificando formatação (Prettier)...' && npx prettier --check . && echo '🔍 Rodando linter (ESLint)...' && npm run lint && echo '✅ Sucesso no Frontend!' "
+
+volumes:
+  maven-repo: # Volume persistente para o cache do Maven
