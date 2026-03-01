@@ -23,6 +23,7 @@ public interface BookRepository extends JpaRepository<Book, Long> {
 
     // Busca unificada: título OU autor (case-insensitive)
     // Utiliza @Query porque métodos derivados só suportam AND entre condições
-    @Query("SELECT b FROM Book b WHERE LOWER(b.title) LIKE LOWER(CONCAT('%', :q, '%')) OR LOWER(b.author) LIKE LOWER(CONCAT('%', :q, '%'))")
+    @Query(
+            "SELECT b FROM Book b WHERE LOWER(b.title) LIKE LOWER(CONCAT('%', :q, '%')) OR LOWER(b.author) LIKE LOWER(CONCAT('%', :q, '%'))")
     List<Book> search(@Param("q") String query);
 }

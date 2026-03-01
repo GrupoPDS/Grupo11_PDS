@@ -4,6 +4,8 @@ import br.ufu.pds.library.core.domain.Book;
 import br.ufu.pds.library.entrypoint.api.dto.BookResponse;
 import br.ufu.pds.library.entrypoint.api.dto.CreateBookRequest;
 import br.ufu.pds.library.infrastructure.service.BookService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import jakarta.validation.Valid;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -35,25 +37,24 @@ public class BookController {
     }
 
     @GetMapping
-    public ResponseEntity<List<BookResponse>> listAll() {
+    @Operation(
+            summary = "Listar ou buscar livros",
+            description =
+                    "Retorna todos os livros ou filtra por título/autor se parâmetro q for fornecido")
+    @ApiResponse(responseCode = "200", description = "Lista de livros retornada com sucesso")
+    public ResponseEntity<List<BookResponse>> list(@RequestParam(required = false) String q) {
         List<BookResponse> books =
-                bookService.findAll().stream().map(BookResponse::fromEntity).toList();
-
+                bookService.search(q).stream().map(BookResponse::fromEntity).toList();
         return ResponseEntity.ok(books);
     }
 
-    @GetMapping
-    @Operation(summary = "Listar ou buscar livros", description = "Retorna todos os livros ou filtra por título/autor se parâmetro q for fornecido")
-    @ApiResponse(responseCode = "200", description = "Lista de livros retornada com sucesso")
-    public List<BookResponse> list(@RequestParam(required = false) String q) {
-        return bookService.search(q);
-    }
-
     @GetMapping("/{id}")
-    @Operation(summary = "Buscar livro por ID", description = "Retorna um livro específico pelo seu identificador")
+    @Operation(
+            summary = "Buscar livro por ID",
+            description = "Retorna um livro específico pelo seu identificador")
     @ApiResponse(responseCode = "200", description = "Livro encontrado com sucesso")
     @ApiResponse(responseCode = "404", description = "Livro não encontrado")
-    public BookResponse getById(@PathVariable Long id) {
-        return bookService.findById(id);
+    public ResponseEntity<BookResponse> getById(@PathVariable Long id) {
+        return ResponseEntity.ok(BookResponse.fromEntity(bookService.findById(id)));
     }
 }
