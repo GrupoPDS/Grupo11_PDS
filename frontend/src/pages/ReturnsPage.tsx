@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Search, Download } from 'lucide-react';
 import { api } from '../services/api';
 import { useDebounce } from '../hooks/useDebounce';
+import { usePageTitle } from '../hooks/usePageTitle';
 import { Badge } from '../components/Badge';
 
 export interface LoanResponse {
@@ -19,6 +20,7 @@ export interface LoanResponse {
 }
 
 export default function ReturnsPage() {
+  usePageTitle('Devoluções');
   const [loans, setLoans] = useState<LoanResponse[]>([]);
   const [searchInput, setSearchInput] = useState('');
   const [activeTab, setActiveTab] = useState<'ALL' | 'OVERDUE'>('ALL');

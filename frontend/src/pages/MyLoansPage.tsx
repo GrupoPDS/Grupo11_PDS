@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { BookOpen, Clock, CheckCircle2, AlertCircle, BarChart3 } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
+import { usePageTitle } from '../hooks/usePageTitle';
 import { api } from '../services/api';
 import { Badge } from '../components/Badge';
 import { Toast, type ToastType } from '../components/Toast';
@@ -53,6 +54,7 @@ type StatusFilter = 'ALL' | 'ACTIVE' | 'RETURNED' | 'OVERDUE';
 /* ── Componente ── */
 
 export default function MyLoansPage() {
+  usePageTitle('Meus Empréstimos');
   const { user } = useAuth();
 
   /* Estado: Histórico paginado */

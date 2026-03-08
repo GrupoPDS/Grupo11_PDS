@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { AlertCircle, Download, Search } from 'lucide-react';
 import { api } from '../services/api';
 import { useDebounce } from '../hooks/useDebounce';
+import { usePageTitle } from '../hooks/usePageTitle';
 
 /* ── Tipos ── */
 
@@ -41,6 +42,7 @@ interface PagedResult {
 /* ── Componente ── */
 
 export default function OverdueReportPage() {
+  usePageTitle('Atrasos');
   const [pagedData, setPagedData] = useState<PagedResult | null>(null);
   const [summary, setSummary] = useState<OverdueSummary | null>(null);
   const [currentPage, setCurrentPage] = useState(0);

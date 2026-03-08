@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { ArrowLeft, Book, Copy, User, Calendar, AlertTriangle, CheckCircle } from 'lucide-react';
 import { api } from '../services/api';
+import { usePageTitle } from '../hooks/usePageTitle';
 
 interface BookInfo {
   id: number;
@@ -29,6 +30,7 @@ export default function BookDetailsPage() {
   const [copies, setCopies] = useState<CopyDetail[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  usePageTitle(book?.title ?? 'Detalhes do Livro');
 
   useEffect(() => {
     if (!id) return;

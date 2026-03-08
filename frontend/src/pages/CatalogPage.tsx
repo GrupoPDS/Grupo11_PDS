@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { PlusCircle, Bookmark, BookOpen, X } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
+import { usePageTitle } from '../hooks/usePageTitle';
 import { api } from '../services/api';
 import { Toast, type ToastType } from '../components/Toast';
 
@@ -28,6 +29,7 @@ type ToastNotification = {
 } | null;
 
 export default function CatalogPage() {
+  usePageTitle('Catálogo');
   const { user } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
   const searchQuery = searchParams.get('q') || '';
