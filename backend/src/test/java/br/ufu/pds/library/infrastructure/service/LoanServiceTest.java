@@ -1,7 +1,7 @@
 package br.ufu.pds.library.infrastructure.service;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 import br.ufu.pds.library.core.domain.*;
@@ -10,8 +10,10 @@ import br.ufu.pds.library.core.exceptions.BookNotFoundException;
 import br.ufu.pds.library.core.exceptions.InvalidLoanStatusException;
 import br.ufu.pds.library.core.exceptions.LoanNotFoundException;
 import br.ufu.pds.library.core.exceptions.UserNotFoundException;
+import br.ufu.pds.library.infrastructure.persistence.BookCopyRepository;
 import br.ufu.pds.library.infrastructure.persistence.BookRepository;
 import br.ufu.pds.library.infrastructure.persistence.LoanRepository;
+import br.ufu.pds.library.infrastructure.persistence.ReservationRepository;
 import br.ufu.pds.library.infrastructure.persistence.UserRepository;
 import java.time.LocalDate;
 import java.util.List;
@@ -31,6 +33,10 @@ public class LoanServiceTest {
     @Mock private UserRepository userRepository;
 
     @Mock private BookRepository bookRepository;
+
+    @Mock private BookCopyRepository bookCopyRepository;
+
+    @Mock private ReservationRepository reservationRepository;
 
     @InjectMocks private LoanService loanService;
 
@@ -71,6 +77,8 @@ public class LoanServiceTest {
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
         when(bookRepository.findById(1L)).thenReturn(Optional.of(book));
         when(loanRepository.countByBookIdAndStatus(1L, LoanStatus.ACTIVE)).thenReturn(0L);
+        when(reservationRepository.findByBookIdAndStatusOrderByReservationDateAsc(eq(1L), any()))
+                .thenReturn(List.of());
         when(loanRepository.save(any(Loan.class)))
                 .thenAnswer(
                         inv -> {
@@ -114,6 +122,8 @@ public class LoanServiceTest {
         when(bookRepository.findById(1L)).thenReturn(Optional.of(book));
         // book.quantity = 2, activeLoans = 2 → indisponível
         when(loanRepository.countByBookIdAndStatus(1L, LoanStatus.ACTIVE)).thenReturn(2L);
+        when(reservationRepository.findByBookIdAndStatusOrderByReservationDateAsc(eq(1L), any()))
+                .thenReturn(List.of());
 
         assertThrows(
                 BookNotAvailableException.class,
@@ -184,6 +194,9 @@ public class LoanServiceTest {
     void returnLoan_success_whenActive() {
         when(loanRepository.findById(1L)).thenReturn(Optional.of(loan));
         when(loanRepository.save(any(Loan.class))).thenAnswer(inv -> inv.getArgument(0));
+        when(reservationRepository.findFirstByBookIdAndStatusOrderByReservationDateAsc(
+                        anyLong(), any()))
+                .thenReturn(Optional.empty());
 
         Loan returned = loanService.returnLoan(1L);
 
@@ -196,6 +209,9 @@ public class LoanServiceTest {
         loan.setStatus(LoanStatus.OVERDUE);
         when(loanRepository.findById(1L)).thenReturn(Optional.of(loan));
         when(loanRepository.save(any(Loan.class))).thenAnswer(inv -> inv.getArgument(0));
+        when(reservationRepository.findFirstByBookIdAndStatusOrderByReservationDateAsc(
+                        anyLong(), any()))
+                .thenReturn(Optional.empty());
 
         Loan returned = loanService.returnLoan(1L);
 

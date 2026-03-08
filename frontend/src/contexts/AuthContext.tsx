@@ -8,7 +8,9 @@ import {
   getSavedRefreshToken,
   type UserInfo,
 } from '../services/api';
-import { AuthContext } from './authContext';
+
+import { AuthContext, type AuthContextType } from './authContext';
+export type { AuthContextType };
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<UserInfo | null>(null);

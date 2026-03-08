@@ -1,5 +1,6 @@
 package br.ufu.pds.library.entrypoint.api.controller;
 
+import br.ufu.pds.library.core.exceptions.BookAvailableException;
 import br.ufu.pds.library.core.exceptions.BookNotAvailableException;
 import br.ufu.pds.library.core.exceptions.BookNotFoundException;
 import br.ufu.pds.library.core.exceptions.BusinessException;
@@ -7,12 +8,14 @@ import br.ufu.pds.library.core.exceptions.DuplicateEmailException;
 import br.ufu.pds.library.core.exceptions.DuplicateIsbnException;
 import br.ufu.pds.library.core.exceptions.InvalidLoanStatusException;
 import br.ufu.pds.library.core.exceptions.LoanNotFoundException;
+import br.ufu.pds.library.core.exceptions.ReservationNotFoundException;
 import br.ufu.pds.library.core.exceptions.UserNotFoundException;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -23,6 +26,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
  * Tratador global de exceções da API. Intercepta exceções lançadas pelos Controllers e retorna
  * respostas HTTP padronizadas.
  */
+@Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
@@ -74,6 +78,25 @@ public class GlobalExceptionHandler {
         return buildErrorResponse(HttpStatus.BAD_REQUEST, ex.getMessage());
     }
 
+    /** Livro já disponível na estante (não faz sentido reservar) → 409 Conflict */
+    @ExceptionHandler(BookAvailableException.class)
+    public ResponseEntity<Map<String, Object>> handleBookAvailable(BookAvailableException ex) {
+        return buildErrorResponse(HttpStatus.CONFLICT, ex.getMessage());
+    }
+
+    /** Reserva não encontrada → 404 Not Found */
+    @ExceptionHandler(ReservationNotFoundException.class)
+    public ResponseEntity<Map<String, Object>> handleReservationNotFound(
+            ReservationNotFoundException ex) {
+        return buildErrorResponse(HttpStatus.NOT_FOUND, ex.getMessage());
+    }
+
+    /** Estado inválido para operação → 400 Bad Request */
+    @ExceptionHandler(IllegalStateException.class)
+    public ResponseEntity<Map<String, Object>> handleIllegalState(IllegalStateException ex) {
+        return buildErrorResponse(HttpStatus.BAD_REQUEST, ex.getMessage());
+    }
+
     // =============================================
     // Exceção genérica de negócio (catch-all para subclasses de BusinessException)
     // =============================================
@@ -119,6 +142,7 @@ public class GlobalExceptionHandler {
     /** Qualquer exceção não tratada → 500 Internal Server Error */
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Map<String, Object>> handleGenericException(Exception ex) {
+        log.error("Exceção não tratada: {}", ex.getMessage(), ex);
         return buildErrorResponse(
                 HttpStatus.INTERNAL_SERVER_ERROR,
                 "Erro interno do servidor. Contate o administrador.");
