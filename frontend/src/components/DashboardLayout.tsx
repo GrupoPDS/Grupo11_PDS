@@ -1,4 +1,4 @@
-import { type ReactNode, useEffect, useState, useCallback } from 'react';
+import { type ReactNode, useEffect, useState, useRef, useCallback } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Search, Book, ArrowLeft, AlertCircle, Bookmark, LogOut, User, Bell } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
@@ -30,11 +30,14 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
     }
   }, [user]);
 
+  const fetchRef = useRef(fetchNotifications);
+  fetchRef.current = fetchNotifications;
+
   useEffect(() => {
-    fetchNotifications();
-    const interval = setInterval(fetchNotifications, 30000); // poll every 30s
+    fetchRef.current();
+    const interval = setInterval(() => fetchRef.current(), 30000);
     return () => clearInterval(interval);
-  }, [fetchNotifications]);
+  }, []);
 
   const navItems = [
     { path: '/', icon: <Book />, label: 'Catálogo', visible: true },
