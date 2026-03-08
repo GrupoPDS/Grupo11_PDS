@@ -26,6 +26,10 @@ public class Loan {
     @JoinColumn(name = "book_id", nullable = false)
     private Book book;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "book_copy_id")
+    private BookCopy bookCopy;
+
     @Column(name = "loan_date", nullable = false)
     @Builder.Default
     private LocalDate loanDate = LocalDate.now();

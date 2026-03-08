@@ -16,12 +16,14 @@ public class LoanResponse {
     private String userName;
     private Long bookId;
     private String bookTitle;
+    private String bookIsbn;
     private LocalDate loanDate;
     private LocalDate dueDate;
     private LocalDate returnDate;
     private LoanStatus status;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+    private String copyCode;
 
     public static LoanResponse fromEntity(Loan loan) {
         return new LoanResponse(
@@ -30,11 +32,13 @@ public class LoanResponse {
                 loan.getUser().getName(),
                 loan.getBook().getId(),
                 loan.getBook().getTitle(),
+                loan.getBook().getIsbn(),
                 loan.getLoanDate(),
                 loan.getDueDate(),
                 loan.getReturnDate(),
                 loan.getStatus(),
                 loan.getCreatedAt(),
-                loan.getUpdatedAt());
+                loan.getUpdatedAt(),
+                loan.getBookCopy() != null ? loan.getBookCopy().getCopyCode() : null);
     }
 }

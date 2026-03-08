@@ -1,4 +1,4 @@
-import { useEffect, useState, type ReactNode } from 'react';
+import { useEffect, useState, createContext, type ReactNode } from 'react';
 import {
   loginApi,
   registerApi,
@@ -8,7 +8,17 @@ import {
   getSavedRefreshToken,
   type UserInfo,
 } from '../services/api';
-import { AuthContext } from './authContext';
+
+export interface AuthContextType {
+  user: UserInfo | null;
+  isAuthenticated: boolean;
+  isLoading: boolean;
+  login: (email: string, password: string) => Promise<void>;
+  register: (name: string, email: string, password: string) => Promise<void>;
+  logout: () => Promise<void>;
+}
+
+export const AuthContext = createContext<AuthContextType | null>(null);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<UserInfo | null>(null);
