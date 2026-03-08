@@ -2,7 +2,18 @@ import { type ReactNode, useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Search, Book, ArrowLeft, AlertCircle, Bookmark, LogOut, User, Bell } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
+import { useDebounce } from '../hooks/useDebounce';
 import { api } from '../services/api';
+
+interface SearchResult {
+  id: number;
+  title: string;
+  author: string;
+  isbn: string;
+  category: string;
+  availableCopies: number;
+  quantity: number;
+}
 
 interface DashboardLayoutProps {
   children: ReactNode;
@@ -16,6 +27,13 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
   const canManage = user?.role === 'ADMIN' || user?.role === 'LIBRARIAN';
 
   const [notificationCount, setNotificationCount] = useState(0);
+
+  // Search state
+  const [searchInput, setSearchInput] = useState('');
+  const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
+  const [showDropdown, setShowDropdown] = useState(false);
+  const [searching, setSearching] = useState(false);
+  const debouncedSearch = useDebounce(searchInput, 300);
 
   useEffect(() => {
     if (!user) return;
@@ -41,6 +59,61 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
       clearInterval(interval);
     };
   }, [user]);
+
+  // Live search effect
+  useEffect(() => {
+    if (!debouncedSearch.trim()) {
+      setSearchResults([]);
+      setShowDropdown(false);
+      return;
+    }
+
+    let cancelled = false;
+    const doSearch = async () => {
+      setSearching(true);
+      try {
+        const res = await api(`/books?q=${encodeURIComponent(debouncedSearch.trim())}`);
+        if (res.ok && !cancelled) {
+          const data = await res.json();
+          setSearchResults(data.slice(0, 6));
+          setShowDropdown(true);
+        }
+      } catch {
+        // silently fail
+      } finally {
+        if (!cancelled) setSearching(false);
+      }
+    };
+    doSearch();
+    return () => {
+      cancelled = true;
+    };
+  }, [debouncedSearch]);
+
+  // Close dropdown when navigating
+  useEffect(() => {
+    setShowDropdown(false);
+  }, [location.pathname, location.search]);
+
+  const handleSearchKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter' && searchInput.trim()) {
+      setShowDropdown(false);
+      navigate(`/?q=${encodeURIComponent(searchInput.trim())}`);
+    }
+    if (e.key === 'Escape') {
+      setShowDropdown(false);
+    }
+  };
+
+  const handleResultClick = (book: SearchResult) => {
+    setShowDropdown(false);
+    setSearchInput('');
+    if (canManage) {
+      navigate(`/books/${book.id}`);
+    } else {
+      navigate(`/?q=${encodeURIComponent(book.title)}`);
+    }
+  };
 
   const navItems = [
     { path: '/', icon: <Book />, label: 'Catálogo', visible: true },
@@ -123,12 +196,72 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
       <div className="flex-1 flex flex-col min-w-0">
         <header className="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-8 shrink-0 z-10">
           <div className="flex items-center w-full max-w-md relative">
-            <Search className="w-4 h-4 text-slate-400 absolute left-3" />
+            <Search className="w-4 h-4 text-slate-400 absolute left-3 z-10" />
             <input
               type="text"
-              placeholder="Pesquisar no sistema..."
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
+              onFocus={() => {
+                if (searchResults.length > 0) setShowDropdown(true);
+              }}
+              onKeyDown={handleSearchKeyDown}
+              placeholder="Buscar livros por titulo, autor, ISBN..."
               className="w-full pl-10 pr-4 py-2 bg-slate-100 border-transparent rounded-md text-sm focus:bg-white focus:border-[#003399] focus:ring-1 focus:ring-[#003399] outline-none transition-all"
             />
+
+            {/* Dropdown de resultados */}
+            {showDropdown && (
+              <>
+                <div className="fixed inset-0 z-10" onClick={() => setShowDropdown(false)} />
+                <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-slate-200 rounded-lg shadow-lg z-20 max-h-80 overflow-y-auto">
+                  {searching ? (
+                    <div className="px-4 py-3 text-sm text-slate-400">Buscando...</div>
+                  ) : searchResults.length === 0 ? (
+                    <div className="px-4 py-3 text-sm text-slate-400">
+                      Nenhum resultado para &ldquo;{debouncedSearch}&rdquo;
+                    </div>
+                  ) : (
+                    <>
+                      {searchResults.map((book) => (
+                        <button
+                          key={book.id}
+                          onClick={() => handleResultClick(book)}
+                          className="w-full px-4 py-3 text-left hover:bg-slate-50 transition-colors flex items-start gap-3 border-b border-slate-100 last:border-b-0 cursor-pointer bg-transparent"
+                        >
+                          <Book className="w-4 h-4 text-[#003399] mt-0.5 shrink-0" />
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium text-slate-800 truncate m-0">
+                              {book.title}
+                            </p>
+                            <p className="text-xs text-slate-500 m-0">{book.author}</p>
+                          </div>
+                          <span
+                            className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full shrink-0 ${
+                              book.availableCopies > 0
+                                ? 'bg-emerald-100 text-emerald-700'
+                                : 'bg-red-100 text-red-600'
+                            }`}
+                          >
+                            {book.availableCopies > 0
+                              ? `${book.availableCopies} disp.`
+                              : 'Indisponivel'}
+                          </span>
+                        </button>
+                      ))}
+                      <button
+                        onClick={() => {
+                          setShowDropdown(false);
+                          navigate(`/?q=${encodeURIComponent(searchInput.trim())}`);
+                        }}
+                        className="w-full px-4 py-2.5 text-center text-xs font-medium text-[#003399] hover:bg-slate-50 transition-colors cursor-pointer bg-transparent border-t border-slate-200"
+                      >
+                        Ver todos os resultados
+                      </button>
+                    </>
+                  )}
+                </div>
+              </>
+            )}
           </div>
 
           <div className="flex items-center gap-4">

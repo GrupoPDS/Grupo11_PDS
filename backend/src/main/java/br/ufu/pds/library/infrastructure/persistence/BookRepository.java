@@ -21,9 +21,18 @@ public interface BookRepository extends JpaRepository<Book, Long> {
     // Busca parcial no autor (case-insensitive)
     List<Book> findByAuthorContainingIgnoreCase(String author);
 
-    // Busca unificada: título OU autor (case-insensitive)
-    // Utiliza @Query porque métodos derivados só suportam AND entre condições
+    // Busca unificada: título, autor, ISBN ou categoria (case-insensitive)
+    // Ordena por relevância: match no título primeiro, depois autor, depois ISBN/categoria
     @Query(
-            "SELECT b FROM Book b WHERE LOWER(b.title) LIKE LOWER(CONCAT('%', :q, '%')) OR LOWER(b.author) LIKE LOWER(CONCAT('%', :q, '%'))")
+            "SELECT b FROM Book b WHERE "
+                    + "LOWER(b.title) LIKE LOWER(CONCAT('%', :q, '%')) OR "
+                    + "LOWER(b.author) LIKE LOWER(CONCAT('%', :q, '%')) OR "
+                    + "LOWER(b.isbn) LIKE LOWER(CONCAT('%', :q, '%')) OR "
+                    + "LOWER(b.category) LIKE LOWER(CONCAT('%', :q, '%')) "
+                    + "ORDER BY "
+                    + "CASE WHEN LOWER(b.title) LIKE LOWER(CONCAT('%', :q, '%')) THEN 0 "
+                    + "     WHEN LOWER(b.author) LIKE LOWER(CONCAT('%', :q, '%')) THEN 1 "
+                    + "     ELSE 2 END, "
+                    + "b.title ASC")
     List<Book> search(@Param("q") String query);
 }

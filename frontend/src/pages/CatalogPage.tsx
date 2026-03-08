@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
-import { PlusCircle, Bookmark, BookOpen } from 'lucide-react';
+import { Link, useSearchParams } from 'react-router-dom';
+import { PlusCircle, Bookmark, BookOpen, X } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { api } from '../services/api';
 import { Toast, type ToastType } from '../components/Toast';
@@ -29,6 +29,8 @@ type ToastNotification = {
 
 export default function CatalogPage() {
   const { user } = useAuth();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const searchQuery = searchParams.get('q') || '';
   const [title, setTitle] = useState('');
   const [author, setAuthor] = useState('');
   const [isbn, setIsbn] = useState('');
@@ -51,9 +53,9 @@ export default function CatalogPage() {
   const canCreateBook = user?.role === 'ADMIN' || user?.role === 'LIBRARIAN';
 
   useEffect(() => {
-    loadBooks();
+    loadBooks(searchQuery);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [searchQuery]);
 
   const showToast = (message: string, type: ToastType) => {
     const id = Math.random().toString(36).substr(2, 9);
@@ -73,7 +75,7 @@ export default function CatalogPage() {
 
       if (res.status === 201) {
         showToast('Empréstimo registrado! Prazo de devolução: 14 dias.', 'success');
-        await loadBooks();
+        await loadBooks(searchQuery);
         return;
       }
       if (res.status === 400 || res.status === 409) {
@@ -116,7 +118,7 @@ export default function CatalogPage() {
       if (!res.ok) throw new Error('Falha ao reservar o livro.');
 
       showToast('Reserva efetuada com sucesso! Você entrou na fila de espera.', 'success');
-      await loadBooks();
+      await loadBooks(searchQuery);
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Erro inesperado ao tentar reservar.';
       console.error(err);
@@ -126,10 +128,11 @@ export default function CatalogPage() {
     }
   };
 
-  const loadBooks = async () => {
+  const loadBooks = async (query?: string) => {
     try {
       setLoadingBooks(true);
-      const res = await api('/books');
+      const url = query ? `/books?q=${encodeURIComponent(query)}` : '/books';
+      const res = await api(url);
       if (!res.ok) throw new Error('Falha ao carregar livros');
       const data = await res.json();
       setBooks(data || []);
@@ -170,7 +173,7 @@ export default function CatalogPage() {
         setIsbn('');
         setCategory('Tecnologia');
         setQuantity(1);
-        await loadBooks();
+        await loadBooks(searchQuery);
       } else if (res.status === 403) {
         showToast('Você não tem permissão para cadastrar livros', 'error');
       } else if (res.status === 409) {
@@ -299,11 +302,31 @@ export default function CatalogPage() {
         </div>
       )}
 
+      {/* Indicador de busca ativa */}
+      {searchQuery && (
+        <div className="flex items-center gap-2 bg-blue-50 border border-blue-200 rounded-lg px-4 py-2 text-sm text-blue-800">
+          <span>
+            Resultados para: <strong>&quot;{searchQuery}&quot;</strong>
+          </span>
+          <button
+            onClick={() => setSearchParams({})}
+            className="ml-auto flex items-center gap-1 text-blue-600 hover:text-blue-800 cursor-pointer"
+          >
+            <X size={14} />
+            Limpar busca
+          </button>
+        </div>
+      )}
+
       {/* Grid de Livros */}
       {loadingBooks ? (
         <p className="text-slate-500 text-center py-8">Carregando livros...</p>
       ) : books.length === 0 ? (
-        <p className="text-slate-400 text-center py-8">Nenhum livro cadastrado ainda</p>
+        <p className="text-slate-400 text-center py-8">
+          {searchQuery
+            ? 'Nenhum livro encontrado para esta busca'
+            : 'Nenhum livro cadastrado ainda'}
+        </p>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
           {books.map((book) => (
