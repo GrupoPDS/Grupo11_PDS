@@ -1,4 +1,4 @@
-import { type ReactNode, useEffect, useState, useRef, useCallback } from 'react';
+import { type ReactNode, useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Search, Book, ArrowLeft, AlertCircle, Bookmark, LogOut, User, Bell } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
@@ -17,27 +17,30 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
 
   const [notificationCount, setNotificationCount] = useState(0);
 
-  const fetchNotifications = useCallback(async () => {
-    if (!user) return;
-    try {
-      const res = await api('/reservations/my/notifications');
-      if (res.ok) {
-        const data = await res.json();
-        setNotificationCount(data.availableForPickup || 0);
-      }
-    } catch {
-      // silently fail
-    }
-  }, [user]);
-
-  const fetchRef = useRef(fetchNotifications);
-  fetchRef.current = fetchNotifications;
-
   useEffect(() => {
-    fetchRef.current();
-    const interval = setInterval(() => fetchRef.current(), 30000);
-    return () => clearInterval(interval);
-  }, []);
+    if (!user) return;
+
+    let cancelled = false;
+
+    const poll = async () => {
+      try {
+        const res = await api('/reservations/my/notifications');
+        if (res.ok && !cancelled) {
+          const data = await res.json();
+          setNotificationCount(data.availableForPickup || 0);
+        }
+      } catch {
+        // silently fail
+      }
+    };
+
+    poll();
+    const interval = setInterval(poll, 30000);
+    return () => {
+      cancelled = true;
+      clearInterval(interval);
+    };
+  }, [user]);
 
   const navItems = [
     { path: '/', icon: <Book />, label: 'Catálogo', visible: true },
